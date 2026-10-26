@@ -1,0 +1,15 @@
+- type: custom-api
+  title: 影音库
+  cache: 1h
+  url: ${JELLYFIN_URL}/Items/Counts
+  headers:
+    X-Emby-Token: ${JELLYFIN_API_KEY}
+    Accept: application/json
+  template: |-
+    {{ if eq .Response.StatusCode 200 }}
+    <div class="flex justify-between text-center">
+      <div><div class="color-highlight size-h3">{{ .JSON.Int "MovieCount" | formatNumber }}</div><div class="size-h6">电影</div></div>
+      <div><div class="color-highlight size-h3">{{ .JSON.Int "SeriesCount" | formatNumber }}</div><div class="size-h6">剧集</div></div>
+      <div><div class="color-highlight size-h3">{{ .JSON.Int "EpisodeCount" | formatNumber }}</div><div class="size-h6">单集</div></div>
+    </div>
+    {{ else }}<p>影音统计暂不可用，请检查 Jellyfin 地址与 API 密钥。</p>{{ end }}

@@ -1,0 +1,110 @@
+name: homelab_network
+
+# 网络层：DNS 分流 + 透明代理 + WireGuard
+#
+# 端口段 6200-6299：
+#   6200   AdGuard Home Web（需与 AdGuardHome.yaml 的 http.address 保持一致）
+#   6210   dnsq        国内外分流解析器（仅 127.0.0.1）
+#   6212   tproxy      隧道 TCP 透明转发（仅本机）
+#   6213   filterhost  本地过滤列表（仅 127.0.0.1）
+#   53     AdGuard Home DNS（host 网络）
+#   51820  WireGuard（host 网络 / UDP）
+#
+# 数据流：
+#   客户端 → adguardhome:53 → dnsq:6210 → 国内 223.5.5.5 / 国外 SOCKS 192.168.10.4:6153 → 1.1.1.1
+#   UDM → wg-home:51820 → tproxy:6212 → Surge SOCKS 192.168.10.4:6153
+#
+# 约定：仓库根目录即 NAS 的 /volume1/docker/homelab，容器路径相对本文件
+# 部署：docker compose --env-file .env -f network/network.yaml up -d
+
+services:
+  wg-home:
+    # DSM 内核没有 wireguard 模块，这里用用户态实现（wireguard-go），因此需要自建镜像；
+    # linuxserver/wireguard、wg-easy 等现成镜像依赖内核模块，在 DSM 上无法启动。
+    # wg0.conf 含私钥，位于宿主机 network/wireguard/wg0.conf（已 gitignore）。
+    build: ./wireguard
+    image: wg-home:latest
+    container_name: wg-home
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - /dev/net:/dev/net
+      - ./wireguard:/config
+    command: sh /config/entry.sh
+    healthcheck:
+      test: ["CMD-SHELL", "wg show wg0 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  tproxy:
+    image: python:3.11-slim-bookworm
+    container_name: tproxy
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./tproxy:/app
+    command: python3 /app/tproxy.py
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  dnsq:
+    image: python:3.11-slim-bookworm
+    container_name: dnsq
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./dnsq:/app
+    command: python3 /app/dnsq.py
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  filterhost:
+    image: python:3.11-slim-bookworm
+    container_name: filterhost
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./adguardhome/work/filters:/srv
+    command: python3 -m http.server 6213 --bind 127.0.0.1 --directory /srv
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  adguardhome:
+    image: docker.1ms.run/adguard/adguardhome:latest
+    container_name: adguardhome
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ./adguardhome/work:/opt/adguardhome/work
+      - ./adguardhome/conf:/opt/adguardhome/conf
+    command: --no-check-update -c /opt/adguardhome/conf/AdGuardHome.yaml -w /opt/adguardhome/work
+    depends_on:
+      - dnsq
+    deploy:
+      resources:
+        limits:
+          memory: 128M

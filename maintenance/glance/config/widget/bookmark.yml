@@ -1,0 +1,40 @@
+- type: bookmarks
+  groups:
+    - title: WORK
+      links:
+        - title: oa
+          url: https://oa.dameng.com/
+        - title: wiki
+          url: https://wiki.dameng.com/
+        - title: prod
+          url: https://prod.dameng.com/
+    - title: ENTERTAINMENT
+      links:
+        - title: bilibili
+          url: https://bilibili.com/
+        - title: anime
+          url: https://agedm.org/
+        - title: x
+          url: https://x.com/
+    - title: KNOWLEDGE
+      links:
+        - title: wikipedia
+          url: https://en.wikipedia.org/
+        - title: github
+          url: https://github.com/
+    - title: HOMELAB
+      links:
+        - title: Immich
+          url: http://192.168.10.5:6104
+        - title: n8n
+          url: http://192.168.10.5:6107
+        - title: Glance
+          url: http://192.168.10.5:6001
+    - title: AI 助手
+      links:
+        - title: openai
+          url: https://chat.openai.com/
+        - title: deepseek
+          url: https://chat.deepseek.com/
+        - title: claude
+          url: https://claude.ai/

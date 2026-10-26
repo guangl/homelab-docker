@@ -1,0 +1,8 @@
+- type: dns-stats
+  title: DNS 查询与拦截
+  service: adguard
+  url: ${ADGUARD_URL}
+  username: ${ADGUARD_USERNAME}
+  password: ${ADGUARD_PASSWORD}
+  hour-format: 24h
+  cache: 5m

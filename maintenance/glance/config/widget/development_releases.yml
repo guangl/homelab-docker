@@ -1,0 +1,9 @@
+- type: releases
+  title: 开发工具更新
+  cache: 12h
+  collapse-after: 5
+  repositories:
+    - rust-lang/rust
+    - guangl/dameng-cli
+    - guangl/dm-database-sqllog2db
+    - docker/compose

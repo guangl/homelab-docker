@@ -1,0 +1,7 @@
+branding:
+  hide-footer: true
+  app-name: 我的家庭主页
+pages:
+  - $include: home_page.yml
+  - $include: homelab_page.yml
+  - $include: development_page.yml

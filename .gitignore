@@ -1,0 +1,46 @@
+# 本地环境变量
+.env
+
+# 运行时数据：由容器生成，不纳入版本管理
+application/jellyfin/config/
+application/jellyfin/cache/
+application/ani-rss/
+application/qbittorrent/cache/
+application/qbittorrent/data/
+application/qbittorrent/config/*
+!application/qbittorrent/config/qBittorrent.conf
+application/immich/
+application/trendradar/output/
+application/n8n/data/
+tools/grafana/data/
+tools/prometheus/data/
+maintenance/ddns/
+maintenance/uptime-kuma/
+maintenance/peanut/
+infrastructure/postgresql/data/
+infrastructure/redis/data/
+network/adguardhome/
+network/tproxy/
+network/dnsq/
+
+# 密钥与日志
+network/wireguard/wg0.conf
+network/smartdns/smartdns.log
+
+# Glance integration credentials
+.env.glance
+
+# Local credentials, reverse-tunnel keys, and troubleshooting backups
+.env.*
+!.env.example
+!**/.env.*.example
+**/secrets/
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+*.before-*
+*.bak
+*.bak-*
+*.log
+.DS_Store

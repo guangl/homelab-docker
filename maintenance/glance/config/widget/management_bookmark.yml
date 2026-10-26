@@ -1,0 +1,10 @@
+- type: bookmarks
+  title: 管理入口
+  groups:
+    - links:
+        - title: 主机 CPU / 内存 / 磁盘（Glances）
+          url: https://top.guangluo.top
+        - title: Uptime Kuma 历史与告警
+          url: https://monitor.guangluo.top
+        - title: DDNS 管理
+          url: https://ddns.guangluo.top

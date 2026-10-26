@@ -1,0 +1,4 @@
+- type: hacker-news
+  title: Hacker News
+  limit: 12
+  collapse-after: 5

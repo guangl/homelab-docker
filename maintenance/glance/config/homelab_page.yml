@@ -1,0 +1,16 @@
+- name: 家庭服务
+  slug: homelab
+  show-mobile-header: true
+  columns:
+    - size: small
+      widgets:
+        - $include: widget/unifi.yml
+        - $include: widget/dns_stats.yml
+    - size: full
+      widgets:
+        - $include: widget/service_monitor.yml
+        - $include: widget/docker.yml
+    - size: small
+      widgets:
+        - $include: widget/homelab_releases.yml
+        - $include: widget/management_bookmark.yml

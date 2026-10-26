@@ -1,0 +1,194 @@
+name: homelab_application
+
+# 应用层（6100-6199）
+# 端口：6100 jellyfin、6101 ani-rss、6102 qbittorrent、6103 excalidraw、
+#       6104 immich、6105 drawdb、6106 trendradar、6107 n8n
+# 数据库/缓存：本机 192.168.10.5（见 infrastructure/infrastructure.yaml）
+# 外部媒体：/volume1/entertainments（仓库之外的 NAS 路径，保持绝对路径）
+# 约定：容器路径相对本文件，运行时数据目录已在 .gitignore 中排除
+# 部署：docker compose --env-file .env -f application/application.yaml up -d
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    ports:
+      - 6100:8096
+    volumes:
+      - ./jellyfin/config:/config
+      - ./jellyfin/cache:/cache
+      # 免密入口：/web/autologin.html 写入凭据后跳转 /web/（依赖 guangluo 空密码）
+      - ./jellyfin/autologin.html:/jellyfin/jellyfin-web/autologin.html:ro
+      - /volume1/entertainments:/entertainments
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+
+  ani-rss:
+    image: wushuo894/ani-rss:latest
+    container_name: ani-rss
+    restart: unless-stopped
+    environment:
+      PUID: 0
+      PGID: 0
+      TZ: Asia/Shanghai
+      SERVER_PORT: 9097
+      CONFIG: /config
+    ports:
+      - 6101:9097
+    volumes:
+      - ./ani-rss:/config
+      - /volume1/entertainments:/entertainments
+    depends_on:
+      - qbittorrent
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+  qbittorrent:
+    image: ghcr.io/hotio/qbittorrent
+    container_name: qbittorrent
+    restart: unless-stopped
+    environment:
+      PUID: 0
+      PGID: 0
+      UMASK_SET: 022
+      TZ: Asia/Shanghai
+    ports:
+      - 6102:8080
+    volumes:
+      - ./qbittorrent/config:/config
+      - ./qbittorrent/downloads:/downloads
+      - /volume1/entertainments:/entertainments
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    container_name: excalidraw
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - 6103:80
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  immich-server:
+    image: ghcr.io/immich-app/immich-server:release
+    container_name: immich-server
+    restart: unless-stopped
+    environment:
+      DB_HOSTNAME: 192.168.10.5
+      DB_PORT: 65432
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?请在仓库根 .env 中设置 POSTGRES_PASSWORD}
+      DB_DATABASE_NAME: immichdb
+      REDIS_HOSTNAME: 192.168.10.5
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    ports:
+      - 6104:2283
+    volumes:
+      - ./immich/library:/data
+      - /volume1/entertainments:/entertainments
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:release
+    container_name: immich-machine-learning
+    restart: unless-stopped
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    volumes:
+      - model_cache:/cache
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+  drawdb:
+    image: ghcr.io/drawdb-io/drawdb:latest
+    container_name: drawdb
+    restart: unless-stopped
+    command: sh -c "npm install && npm run dev -- --host"
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    ports:
+      - 6105:80
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  trendradar:
+    image: wantcat/trendradar:latest
+    container_name: trendradar
+    restart: unless-stopped
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+      CRON_SCHEDULE: "* */1 * * *"
+      RUN_MODE: cron
+      IMMEDIATE_RUN: "true"
+      # 通知凭据由 .env 提供（TrendRadar 环境变量优先级高于 config.yaml）
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:?请在仓库根 .env 中设置}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:?请在仓库根 .env 中设置}
+    ports:
+      - 6106:3333
+    volumes:
+      - ./trendradar/config:/app/config:ro
+      - ./trendradar/output:/app/output
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    # n8n 镜像默认以 node(1000) 运行；统一成 NAS 的 1026:100，数据目录才不会写出 root 文件
+    user: "1026:100"
+    environment:
+      TZ: Asia/Shanghai
+      GENERIC_TIMEZONE: Asia/Shanghai
+      N8N_HOST: 192.168.10.5
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      N8N_WEBHOOK_URL: http://192.168.10.5:6107/
+      # 把用户目录指到挂载盘，避免 HOME 不可写
+      N8N_USER_FOLDER: /data
+      HOME: /data
+      N8N_DIAGNOSTICS_ENABLED: "false"
+    ports:
+      - 6107:5678
+    volumes:
+      - ./n8n/data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+
+volumes:
+  model_cache:

@@ -1,0 +1,113 @@
+- type: docker-containers
+  title: 全部容器状态
+  hide-by-default: false
+  format-container-names: true
+  running-only: false
+  containers:
+    jellyfin:
+      id: jellyfin
+      name: Jellyfin
+      description: Media Server
+      url: https://movie.guangluo.top
+      icon: si:jellyfin
+      hide: false
+    ani-rss:
+      id: ani-rss
+      name: Ani Rss
+      description: Anime RSS Downloader
+      url: https://anime.guangluo.top
+      icon: si:anilist
+      hide: false
+    qbittorrent:
+      id: qbittorrent
+      name: qBittorrent
+      description: Torrent Client
+      url: http://download.guangluo.top
+      icon: si:qbittorrent
+      hide: false
+    excalidraw:
+      id: excalidraw
+      name: Excalidraw
+      description: Whiteboard Tool
+      url: https://draw.guangluo.top
+      icon: si:excalidraw
+      hide: false
+    immich-server:
+      id: immich
+      name: Immich Server
+      description: Photo Backup and Management
+      url: http://192.168.10.5:6104
+      icon: si:immich
+      hide: false
+    immich-machine-learning:
+      icon: si:immich
+      parent: immich
+    postgres:
+      icon: si:postgresql
+    redis:
+      icon: si:redis
+    drawdb:
+      name: DrawDB
+      description: 数据库关系图
+      url: https://db.guangluo.top/editor
+      icon: si:databricks
+      hide: false
+    glances:
+      id: glances
+      name: glances
+      description: System Monitoring Tool
+      url: https://top.guangluo.top
+      icon: si:htop
+      hide: false
+    ddns-go:
+      id: ddns-go
+      name: DDNS Go
+      description: Dynamic DNS Service
+      url: https://ddns.guangluo.top
+      icon: si:nextdns
+      hide: false
+    uptime-kuma:
+      id: uptime-kuma
+      name: Uptime Kuma
+      description: Monitor Website Uptime
+      url: https://monitor.guangluo.top
+      icon: si:uptimekuma
+      hide: false
+    adguardhome:
+      id: adguardhome
+      name: AdGuard Home
+      description: Network-wide Ad Blocker
+      url: https://adguard.guangluo.top
+      icon: si:adguard
+      hide: false
+    glance:
+      name: Glance 首页
+      hide: false
+    smartdns:
+      name: SmartDNS
+      hide: false
+    peanut:
+      name: PeaNUT UPS
+      hide: false
+    watchtower:
+      name: Watchtower
+      hide: false
+    trendradar:
+      name: TrendRadar
+      hide: false
+    n8n:
+      name: n8n 自动化
+      url: http://192.168.10.5:6107
+      icon: si:n8n
+    dnsq:
+      name: DNS 分流
+      icon: mdi:dns
+    tproxy:
+      name: 隧道转发
+      icon: mdi:swap-horizontal
+    filterhost:
+      name: 过滤列表服务
+      icon: mdi:filter
+    wg-home:
+      name: WireGuard 服务端
+      icon: mdi:vpn

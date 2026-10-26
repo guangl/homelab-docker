@@ -1,0 +1,17 @@
+- type: search
+  search-engine: kagi
+  new-tab: true
+  placeholder: 搜索；gh GitHub / doc Rust 文档 / bili 哔哩哔哩 / wiki 维基百科
+  bangs:
+    - title: GitHub
+      shortcut: gh
+      url: https://github.com/search?q={QUERY}&type=repositories
+    - title: Rust 文档
+      shortcut: doc
+      url: https://docs.rs/releases/search?query={QUERY}
+    - title: 哔哩哔哩
+      shortcut: bili
+      url: https://search.bilibili.com/all?keyword={QUERY}
+    - title: 维基百科
+      shortcut: wiki
+      url: https://zh.wikipedia.org/wiki/{QUERY}

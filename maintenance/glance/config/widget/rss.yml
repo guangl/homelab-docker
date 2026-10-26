@@ -1,0 +1,7 @@
+- type: rss
+  title: 少数派
+  limit: 12
+  collapse-after: 5
+  feeds:
+    - url: https://sspai.com/feed
+      title: 少数派

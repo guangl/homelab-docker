@@ -1,0 +1,5 @@
+- type: weather
+  title: 武汉天气
+  location: Wuhan, China
+  units: metric
+  hour-format: 24h

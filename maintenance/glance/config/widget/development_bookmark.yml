@@ -1,0 +1,14 @@
+- type: bookmarks
+  title: 开发参考
+  groups:
+    - links:
+        - title: Rust 标准库
+          url: https://doc.rust-lang.org/std/
+        - title: Crates.io
+          url: https://crates.io/
+        - title: Docs.rs
+          url: https://docs.rs/
+        - title: 达梦文档
+          url: https://eco.dameng.com/document/dm/zh-cn/start/
+        - title: GitHub
+          url: https://github.com/guangl

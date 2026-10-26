@@ -1,0 +1,19 @@
+- type: custom-api
+  title: 武汉空气质量
+  cache: 30m
+  url: https://api.waqi.info/feed/geo:30.584355;114.298572/?token=${WAQI_TOKEN}
+  template: |-
+    {{ if eq (.JSON.String "status") "ok" }}
+      {{ $aqi := .JSON.Int "data.aqi" }}
+      <div class="size-h2 color-highlight">AQI {{ $aqi }}</div>
+      {{ if le $aqi 50 }}<p class="color-positive">优</p>
+      {{ else if le $aqi 100 }}<p class="color-positive">良</p>
+      {{ else if le $aqi 150 }}<p class="color-negative">轻度污染</p>
+      {{ else if le $aqi 200 }}<p class="color-negative">中度污染</p>
+      {{ else if le $aqi 300 }}<p class="color-negative">重度污染</p>
+      {{ else }}<p class="color-negative">严重污染</p>{{ end }}
+      <p class="size-h6 margin-top-10">更新：{{ .JSON.String "data.time.s" }}</p>
+      <a href="https://waqi.info/" target="_blank" rel="noreferrer">数据来源：WAQI</a>
+    {{ else }}
+      <p>空气质量暂不可用，请检查 WAQI_TOKEN 或稍后刷新。</p>
+    {{ end }}

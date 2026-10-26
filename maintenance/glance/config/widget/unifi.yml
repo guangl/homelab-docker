@@ -1,0 +1,22 @@
+- type: custom-api
+  title: UniFi 网络
+  cache: 5m
+  url: ${UNIFI_URL}/proxy/network/api/stat/sites
+  headers:
+    X-API-KEY: ${UNIFI_API_KEY}
+    Accept: application/json
+  template: |-
+    {{ if eq .Response.StatusCode 200 }}
+      {{ if .JSON.Array "data" }}
+        {{ range .JSON.Array "data" }}
+          <p class="color-highlight">{{ .String "health.#(subsystem=\"wan\").gw_name" }}</p>
+          {{ if eq (.String "health.#(subsystem=\"wan\").status") "ok" }}
+            <p class="color-positive">WAN 已连接</p>
+          {{ else }}<p class="color-negative">WAN 状态异常或数据缺失</p>{{ end }}
+          <ul class="list list-gap-10 margin-top-10">
+            <li>有线设备：{{ .Int "health.#(subsystem=\"lan\").num_user" }}</li>
+            <li>无线设备：{{ .Int "health.#(subsystem=\"wlan\").num_user" }}</li>
+          </ul>
+        {{ end }}
+      {{ else }}<p>未返回站点数据，请确认控制器接口与 API 密钥权限。</p>{{ end }}
+    {{ else }}<p>网络统计暂不可用，请检查 UniFi 地址、接口与密钥。</p>{{ end }}

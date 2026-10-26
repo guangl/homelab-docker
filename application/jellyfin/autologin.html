@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Jellyfin 登录中…</title></head>
+<body style="background:#202020;color:#eee;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+<div id="msg">正在登录 Jellyfin…</div>
+<script>
+(async () => {
+  const msg = document.getElementById('msg');
+  const origin = window.location.origin;
+  const authHeader = 'MediaBrowser Client="AutoLogin", Device="Web", DeviceId="autologin", Version="1.0.0"';
+  try {
+    const res = await fetch(origin + '/Users/AuthenticateByName', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+      body: JSON.stringify({ Username: 'guangluo', Pw: '' })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = localStorage.getItem('jellyfin_credentials');
+    const creds = raw ? JSON.parse(raw) : { Servers: [] };
+    if (!Array.isArray(creds.Servers)) creds.Servers = [];
+    const server = {
+      Id: data.ServerId,
+      Name: 'nas-jellyfin-server',
+      ManualAddress: origin,
+      LocalAddress: origin,
+      AccessToken: data.AccessToken,
+      UserId: data.User.Id,
+      DateLastAccessed: Date.now(),
+      LastConnectionMode: 2
+    };
+    creds.Servers = creds.Servers.filter(s => s.Id !== server.Id);
+    creds.Servers.push(server);
+    localStorage.setItem('jellyfin_credentials', JSON.stringify(creds));
+    msg.textContent = '登录成功，正在进入…';
+    window.location.replace('/web/');
+  } catch (e) {
+    msg.textContent = '自动登录失败：' + e.message;
+  }
+})();
+</script>
+</body></html>

@@ -1,0 +1,22 @@
+- name: 首页
+  slug: home
+  show-mobile-header: true
+  head-widgets:
+    - $include: widget/search.yml
+  columns:
+    - size: small
+      widgets:
+        - $include: widget/clock.yml
+        - $include: widget/calendar.yml
+        - $include: widget/weather.yml
+        - $include: widget/air_quality.yml
+    - size: full
+      widgets:
+        - $include: widget/bookmark.yml
+        - $include: widget/todo.yml
+        - $include: widget/news_group.yml
+    - size: small
+      widgets:
+        - $include: widget/service_alerts.yml
+        - $include: widget/immich.yml
+        - $include: widget/jellyfin.yml

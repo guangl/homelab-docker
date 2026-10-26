@@ -1,0 +1,7 @@
+- type: repository
+  title: sqllog2db
+  repository: guangl/dm-database-sqllog2db
+  cache: 1h
+  pull-requests-limit: 3
+  issues-limit: 3
+  commits-limit: 3

@@ -1,0 +1,135 @@
+name: homelab_maintenance
+
+# 维护层（6000-6099）
+# 端口：6001 glance、6002 glances、6003 ddns-go、6004 uptime-kuma、6005 peanut
+# 约定：容器路径相对本文件，运行时数据目录已在 .gitignore 中排除
+# 部署：docker compose --env-file .env -f maintenance/maintenance.yaml up -d
+
+services:
+  glance:
+    image: glanceapp/glance
+    container_name: glance
+    restart: unless-stopped
+    env_file:
+      - .env.glance
+    environment:
+      GLANCES_OPT: -w
+      PERIOD: past_24_hours
+      LANGUAGE: All
+      UPTIME_KUMA_URL: https://monitor.guangluo.top
+      UPTIME_KUMA_STATUS_SLUG: instance
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+      # 配置里的 ${...} 由这些变量提供（见仓库根 .env）
+      ADGUARD_USERNAME: ${ADGUARD_USERNAME:?请在仓库根 .env 中设置}
+      ADGUARD_PASSWORD: ${ADGUARD_PASSWORD:?请在仓库根 .env 中设置}
+      WAQI_TOKEN: ${WAQI_TOKEN:?请在仓库根 .env 中设置}
+      # NAS 自身不走隧道（避免自环），外网 RSS 需经 Surge 的 HTTP 代理出网
+      HTTP_PROXY: http://192.168.10.4:6152
+      HTTPS_PROXY: http://192.168.10.4:6152
+      NO_PROXY: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,.guangluo.top
+    ports:
+      - 6001:8080
+    volumes:
+      - ./glance/config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+  glances:
+    image: nicolargo/glances:latest
+    container_name: glances
+    restart: unless-stopped
+    pid: host
+    environment:
+      GLANCES_OPT: -w
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    ports:
+      - 6002:61208
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  ddns:
+    image: jeessy/ddns-go
+    container_name: ddns-go
+    restart: unless-stopped
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    ports:
+      - 6003:9876
+    volumes:
+      - ./ddns:/root
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:nightly2
+    container_name: uptime-kuma
+    restart: unless-stopped
+    environment:
+      PUID: 0
+      PGID: 0
+      TZ: Asia/Shanghai
+    ports:
+      - 6004:3001
+    volumes:
+      - ./uptime-kuma:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  peanut:
+    image: brandawg93/peanut:latest
+    container_name: peanut
+    restart: unless-stopped
+    environment:
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+      WEB_PORT: 8080
+    ports:
+      - 6005:8080
+    volumes:
+      - ./peanut/config:/config
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_SCHEDULE: 0 0 4 * * *
+      WATCHTOWER_INCLUDE_RESTARTING: true
+      WATCHTOWER_LIFECYCLE_HOOKS: true
+      WATCHTOWER_NOTIFICATIONS: shoutrrr
+      WATCHTOWER_DEBUG: true
+      # 由 .env 的 TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID 拼装
+      WATCHTOWER_NOTIFICATION_URL: "telegram://${TELEGRAM_BOT_TOKEN:?请在仓库根 .env 中设置}@telegram/?channels=${TELEGRAM_CHAT_ID:?请在仓库根 .env 中设置}"
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      resources:
+        limits:
+          memory: 32M
