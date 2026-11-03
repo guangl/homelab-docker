@@ -1,15 +1,14 @@
 - name: 摄影与数码
   slug: photography
   show-mobile-header: true
+  head-widgets:
+    - $include: widget/photography_intro.yml
   columns:
-  - size: small
-    widgets:
-    - $include: widget/photography_bookmark.yaml
-    - $include: widget/immich.yml
-    - $include: widget/apple_rss.yaml
-  - size: full
-    widgets:
-    - $include: widget/digital_media_group.yaml
-  - size: small
-    widgets:
-    - $include: widget/sony_rss.yaml
+    - size: full
+      widgets:
+        - $include: widget/photography_rss.yaml
+        - $include: widget/digital_media_group.yaml
+    - size: small
+      widgets:
+        - $include: widget/immich.yml
+        - $include: widget/sony_rss.yaml

@@ -10,7 +10,6 @@
       widgets:
         - $include: widget/clock.yml
         - $include: widget/weather.yml
-        - $include: widget/air_quality.yml
     - size: full
       widgets:
         - $include: widget/bookmark.yml
@@ -19,5 +18,5 @@
     - size: small
       widgets:
         - $include: widget/calendar.yml
-        - $include: widget/immich.yml
+        - $include: widget/air_quality.yml
         - $include: widget/emby.yml

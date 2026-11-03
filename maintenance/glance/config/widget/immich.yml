@@ -7,9 +7,9 @@
     Accept: application/json
   template: |-
     {{ if eq .Response.StatusCode 200 }}
-    <div class="flex justify-between text-center">
-      <div><div class="color-highlight size-h3">{{ .JSON.Int "photos" | formatNumber }}</div><div class="size-h6">照片</div></div>
-      <div><div class="color-highlight size-h3">{{ .JSON.Int "videos" | formatNumber }}</div><div class="size-h6">视频</div></div>
-      <div><div class="color-highlight size-h3">{{ div (.JSON.Int "usage" | toFloat) 1073741824 | printf "%.1f" }}</div><div class="size-h6">GiB</div></div>
+    <div class="studio-metrics photo-library-metrics">
+      <div><strong>{{ .JSON.Int "photos" | formatNumber }}</strong><span>照片</span></div>
+      <div><strong>{{ .JSON.Int "videos" | formatNumber }}</strong><span>视频</span></div>
     </div>
+    <div class="photo-library-caption">每一帧，都是生活的存档。</div>
     {{ else }}<p>照片统计暂不可用，请检查 API 密钥及统计权限。</p>{{ end }}
