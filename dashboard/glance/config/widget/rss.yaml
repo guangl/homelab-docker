@@ -1,0 +1,6 @@
+- type: rss
+  title: News
+  style: horizontal-cards-2
+  feeds:
+  - url: https://sspai.com/feed
+    title: SSPAI

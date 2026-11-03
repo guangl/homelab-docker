@@ -1,0 +1,4 @@
+- type: group
+  widgets:
+    - $include: hacker_news.yaml
+    - $include: lobsters.yaml

@@ -1,0 +1,37 @@
+- type: custom-api
+  title: 照片库统计
+  options:
+    url: ${IMMICH_URL}
+    key: ${IMMICH_API_KEY}
+  template: |-
+    {{ $url := .Options.StringOr "url" "" }}
+    {{ $key := .Options.StringOr "key" "" }}
+    {{- if or (eq $url "") (eq $key "") -}}
+    <p class="color-negative">Immich URL or API Key is not configured.</p>
+    {{- else -}}
+    {{- $stats := newRequest (printf "%s/api/server/statistics" $url) | withHeader "x-api-key" $key | withHeader "Accept" "application/json" | getResponse -}}
+    {{- if eq $stats.Response.StatusCode 200 -}}
+    <div class="flex flex-column gap-5">
+      <div class="flex justify-between text-center">
+        <div>
+          <div class="color-highlight size-h3">{{ $stats.JSON.Int "photos" | formatNumber }}</div>
+          <div class="size-h5 uppercase">Photos</div>
+        </div>
+        <div>
+          <div class="color-highlight size-h3">{{ $stats.JSON.Int "videos" | formatNumber }}</div>
+          <div class="size-h5 uppercase">Videos</div>
+        </div>
+        <div>
+          <div class="color-highlight size-h3">{{ div ($stats.JSON.Int "usage" | toFloat) 1073741824 | printf "%.1f" }}</div>
+          <div class="size-h5 uppercase">GiB</div>
+        </div>
+      </div>
+      <div class="flex justify-between size-h6">
+        <span class="color-base">Immich 照片库</span>
+        <a href="https://photo.guangluo.top" class="color-highlight">打开相册 →</a>
+      </div>
+    </div>
+    {{- else -}}
+    <div class="color-negative">Immich request failed: {{ $stats.Response.Status }} ({{ $stats.Response.StatusCode }})</div>
+    {{- end -}}
+    {{- end -}}

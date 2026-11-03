@@ -1,51 +1,40 @@
 # 本地环境变量
 .env
-
-# 运行时数据：由容器生成，不纳入版本管理
-application/jellyfin/config/
-application/jellyfin/cache/
-application/ani-rss/
-application/qbittorrent/cache/
-application/qbittorrent/data/
-application/qbittorrent/config/*
-!application/qbittorrent/config/qBittorrent.conf
-application/immich/
-application/trendradar/output/
-application/n8n/data/
-tools/grafana/data/
-tools/prometheus/data/
-maintenance/ddns/
-maintenance/uptime-kuma/
-maintenance/peanut/
-infrastructure/postgresql/data/
-infrastructure/redis/data/
-network/adguardhome/
-network/tproxy/
-network/dnsq/
-
-# 密钥与日志
-network/wireguard/wg0.conf
-network/smartdns/smartdns.log
-
-# Glance integration credentials
-.env.glance
-
-# Local credentials, reverse-tunnel keys, and troubleshooting backups
 .env.*
 !.env.example
 !**/.env.*.example
+
+# 运行时数据与容器配置：绑定挂载生成，不纳入版本管理
+media/emby/
+media/ani-rss/
+media/qbittorrent/
+media/sublarr/
+media/workflow/DOWNLOADS/
+media/workflow/READY/
+media/workflow/WAITING_SUBTITLE/
+media/workflow/WORK/
+media/workflow/media-arrival-state/
+photos/immich/
+monitoring/uptime-kuma/
+network/adguardhome/
+network/wireguard/
+network/cloud-relay/
+notification/apprise/
+notification/notify/
+notification/phone-routing/router.json
+
+# 密钥、备份与本地产物
 **/secrets/
 *.pem
 *.key
 id_rsa*
 id_ed25519*
-*.before-*
 *.bak
 *.bak-*
+*.before-*
 *.log
 .DS_Store
-
-# Local task artifacts and private live-state exports
+__pycache__/
 outputs/
 *.private
 *.private.json

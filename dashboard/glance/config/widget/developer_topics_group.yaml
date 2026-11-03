@@ -1,0 +1,4 @@
+- type: group
+  widgets:
+  - $include: database_rss.yaml
+  - $include: rust_rss.yaml

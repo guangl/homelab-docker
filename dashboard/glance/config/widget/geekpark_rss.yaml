@@ -1,0 +1,8 @@
+- type: rss
+  title: 中文科技 · 极客公园
+  cache: 2h
+  limit: 10
+  collapse-after: 4
+  feeds:
+  - url: https://www.geekpark.net/rss
+    title: 极客公园

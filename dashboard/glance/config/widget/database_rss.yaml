@@ -1,0 +1,12 @@
+- type: rss
+  title: PostgreSQL 与 DuckDB 动态
+  cache: 2h
+  limit: 12
+  collapse-after: 6
+  feeds:
+  - url: https://www.postgresql.org/news.rss
+    title: PostgreSQL
+    limit: 6
+  - url: https://duckdb.org/feed.xml
+    title: DuckDB
+    limit: 6

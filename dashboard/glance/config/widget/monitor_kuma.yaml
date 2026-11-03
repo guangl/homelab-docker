@@ -1,0 +1,8 @@
+- type: monitor
+  title: 服务可用性
+  css-class: homelab-monitor
+  cache: 1m
+  sites:
+    - title: Uptime Kuma
+      url: https://monitor.guangluo.top/dashboard
+      icon: si:uptimekuma

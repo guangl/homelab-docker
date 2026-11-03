@@ -1,0 +1,17 @@
+- name: 家庭服务
+  slug: services
+  show-mobile-header: true
+  columns:
+  - size: small
+    widgets:
+    - $include: widget/unifi.yaml
+    - $include: widget/dns_stats.yaml
+    - $include: widget/homelab_releases.yaml
+  - size: full
+    widgets:
+    - $include: widget/server_stats.yaml
+    - $include: widget/docker_maintenance.yaml
+    - $include: widget/monitor_kuma.yaml
+  - size: small
+    widgets:
+    - $include: widget/docker.yaml

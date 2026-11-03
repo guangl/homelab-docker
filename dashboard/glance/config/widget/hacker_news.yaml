@@ -1,0 +1,10 @@
+- type: rss
+  title: Hacker News 热门讨论
+  title-url: https://news.ycombinator.com/
+  cache: 1h
+  limit: 12
+  collapse-after: 5
+  preserve-order: true
+  feeds:
+  - url: https://hnrss.org/frontpage
+    title: Hacker News

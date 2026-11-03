@@ -1,0 +1,19 @@
+name: homelab_media_status
+services:
+  media-arrival-status:
+    container_name: media-arrival-status
+    image: python:3.11-alpine
+    command: ['python3', '/app/server.py']
+    environment:
+      EMBY_TRANSLATION_DAILY_LIMIT: "100"
+      TZ: Asia/Shanghai
+    volumes:
+      - /volume1/docker/homelab/media/workflow/media-arrival-state:/state:ro
+      - /volume1/docker/homelab/media/workflow/media-arrival-status:/app:ro
+    networks:
+      maintenance: null
+    restart: unless-stopped
+networks:
+  maintenance:
+    external: true
+    name: homelab_maintenance_default

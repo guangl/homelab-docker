@@ -1,0 +1,15 @@
+- type: rss
+  title: 项目提交 · 我的项目与 DuckDB
+  cache: 4h
+  limit: 12
+  collapse-after: 8
+  feeds:
+  - url: https://github.com/guangl/homelab-docker/commits/main.atom
+    title: homelab-docker
+    limit: 4
+  - url: https://github.com/guangl/dm-database-sqllog2db/commits/main.atom
+    title: sqllog2db
+    limit: 4
+  - url: https://github.com/duckdb/duckdb/commits/main.atom
+    title: DuckDB
+    limit: 4

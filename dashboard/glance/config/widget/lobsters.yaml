@@ -1,0 +1,5 @@
+- type: lobsters
+  title: Lobsters
+  cache: 30m
+  limit: 12
+  collapse-after: 5

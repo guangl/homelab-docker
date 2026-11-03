@@ -1,0 +1,80 @@
+# 每个功能目录仅保留同名 Compose 文件；密钥由根 .env 注入。
+name: homelab_maintenance
+
+services:
+  glances:
+    command: null
+    container_name: glances
+    deploy:
+      resources:
+        limits:
+          memory: '134217728'
+      placement: {}
+    entrypoint: null
+    environment:
+      GLANCES_OPT: -w
+      PGID: '100'
+      PUID: '1026'
+      TZ: Asia/Shanghai
+    image: nicolargo/glances:latest
+    networks:
+      homelab_maintenance_default: null
+    pid: host
+    ports:
+    - mode: ingress
+      target: 61208
+      published: '6002'
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      read_only: true
+      bind:
+        create_host_path: true
+
+  uptime-kuma:
+    command: null
+    container_name: uptime-kuma
+    deploy:
+      resources:
+        limits:
+          memory: '268435456'
+      placement: {}
+    entrypoint: null
+    environment:
+      TZ: Asia/Shanghai
+    image: louislam/uptime-kuma:1
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 5m
+    networks:
+      homelab_application_default: null
+      homelab_maintenance_default: null
+      qb_control: null
+    ports:
+    - mode: ingress
+      target: 3001
+      published: '6003'
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /volume1/docker/homelab/monitoring/uptime-kuma/data
+      target: /app/data
+      bind:
+        create_host_path: true
+
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true
+  qb_control:
+    name: qb_control
+    external: true

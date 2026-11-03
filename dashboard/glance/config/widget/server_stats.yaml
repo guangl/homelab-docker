@@ -1,0 +1,9 @@
+- type: server-stats
+  servers:
+  - type: local
+    name: Services
+    hide-mountpoints-by-default: true
+    mountpoints:
+      /:
+        hide: false
+  title: NAS 资源概览

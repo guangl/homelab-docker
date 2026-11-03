@@ -1,0 +1,89 @@
+# 每个功能目录仅保留同名 Compose 文件；密钥由根 .env 注入。
+name: homelab_maintenance
+
+services:
+  apprise:
+    cap_drop:
+    - ALL
+    command: null
+    container_name: apprise
+    entrypoint: null
+    environment:
+      APPRISE_AUTH_REQUIRED: 'yes'
+      APPRISE_PASSWORD: ${APPRISE_PASSWORD:?请在根 .env 中设置 APPRISE_PASSWORD}
+      APPRISE_USER: ${APPRISE_USER:?请在根 .env 中设置 APPRISE_USER}
+      TZ: Asia/Shanghai
+    image: caronc/apprise:latest
+    networks:
+      homelab_application_default: null
+      homelab_maintenance_default: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8000
+      published: '8000'
+      protocol: tcp
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    tmpfs:
+    - /tmp:uid=1026,gid=100,mode=1777
+    user: 1026:100
+    volumes:
+    - type: bind
+      source: /volume1/docker/homelab/notification/apprise/config
+      target: /config
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /volume1/docker/homelab/notification/apprise/location-override.conf
+      target: /etc/nginx/location-override.conf
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /volume1/docker/homelab/notification/apprise/server-override.conf
+      target: /etc/nginx/server-override.conf
+      read_only: true
+      bind:
+        create_host_path: true
+
+  phone-notification-router:
+    cap_add:
+    - NET_RAW
+    cap_drop:
+    - ALL
+    command: null
+    container_name: phone-notification-router
+    entrypoint:
+    - python
+    - /config/route.py
+    image: caronc/apprise:latest
+    logging:
+      driver: json-file
+      options:
+        max-file: '2'
+        max-size: 1m
+    networks:
+      homelab_maintenance_default: null
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    user: 0:0
+    volumes:
+    - type: bind
+      source: /volume1/docker/homelab/notification/phone-routing
+      target: /config
+      read_only: true
+      bind:
+        create_host_path: true
+
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true

@@ -1,0 +1,18 @@
+- type: rss
+  title: 家庭服务版本更新
+  cache: 12h
+  limit: 7
+  collapse-after: 4
+  feeds:
+  - url: https://github.com/glanceapp/glance/releases.atom
+    title: Glance
+    limit: 1
+  - url: https://github.com/jellyfin/jellyfin/releases.atom
+    title: Jellyfin
+    limit: 1
+  - url: https://github.com/AdguardTeam/AdGuardHome/releases.atom
+    title: AdGuard Home
+    limit: 1
+  - url: https://github.com/qbittorrent/qBittorrent/releases.atom
+    title: qBittorrent
+    limit: 1

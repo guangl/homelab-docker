@@ -1,0 +1,29 @@
+- type: bookmarks
+  groups:
+  - title: 工作
+    links:
+    - title: oa
+      url: https://oa.dameng.com/
+    - title: wiki
+      url: https://wiki.dameng.com/
+    - title: prod
+      url: https://prod.dameng.com/
+  - title: 娱乐
+    links:
+    - title: bilibili
+      url: https://bilibili.com/
+    - title: x
+      url: https://x.com/
+  - title: 知识与技术
+    links:
+    - title: wikipedia
+      url: https://en.wikipedia.org/
+    - title: github
+      url: https://github.com/
+  - title: AI 工具
+    links:
+    - title: openai
+      url: https://chat.openai.com/
+    - title: deepseek
+      url: https://chat.deepseek.com/
+  title: 常用网站

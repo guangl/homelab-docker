@@ -1,0 +1,21 @@
+- name: 搜索
+  center-vertically: true
+  show-mobile-header: true
+  columns:
+  - size: full
+    widgets:
+    - type: search
+      search-engine: kagi
+      new-tab: true
+      autofocus: true
+      bangs:
+      - shortcut: gh
+        url: https://github.com/search?q={QUERY}&type=repositories
+        title: github
+      - shortcut: wiki
+        url: https://zh.wikipedia.org/wiki/{QUERY}
+        title: Wikipedia
+      - shortcut: bili
+        url: https://search.bilibili.com/all?keyword={QUERY}&search_source=1
+        title: bilibili
+  slug: search

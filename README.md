@@ -1,72 +1,69 @@
-# homelab-docker
+# 家庭实验室配置
 
-当前家庭实验室的部署配置。**2026-11-03 已通过 NAS 与 Mac mini 实机只读核对全部 19 个运行容器**，使用实际 Compose、容器参数、镜像摘要和挂载配置整理。不是旧分层编排的整组启动入口。
+NAS 与 Mac mini 的 Docker Compose 配置、运行时模板和脚本。2026-11-03 对照两台主机的实际运行容器整理；目录按功能划分，每个目录只有一个同名 Compose 入口。
 
-## 当前配置在哪
+## 目录
 
 | 目录 | 内容 |
 | --- | --- |
-| [`deploy/nas/`](deploy/nas/) | NAS 的 17 个容器，8 个实际部署单元 |
-| [`deploy/macmini/`](deploy/macmini/) | NPM、Immich 机器学习及 NPM 转发表 |
-| [`deploy/inventory.json`](deploy/inventory.json) | 核验时的服务、端口、网络、原 Compose 路径 |
-| [`templates/runtime/`](templates/runtime/) | 当前 DNS、网关规则、通知路由、数据库配置及脱敏模板 |
-| [`maintenance/glance/config/`](maintenance/glance/config/) | 当前 Glance 页面与组件 |
-| [`network/routing/`](network/routing/) | P2P 直连约定与验证说明 |
-| [`scripts/`](scripts/) | 当前拓扑检查/恢复脚本和独立的 Linux 核心服务安装脚本 |
+| `media/` | Emby、Ani-RSS、qBittorrent、Sublarr（media.yaml）；`workflow/` 为下载后处理、到达检查脚本与状态出口 |
+| `photos/` | Immich Server、数据库、Redis（photos.yaml） |
+| `network/` | AdGuard Home、SmartDNS、Sing-box 网关、公网隧道（network.yaml）；`templates/` 为运行目录模板 |
+| `dashboard/` | Glance（dashboard.yaml 与 glance/config 页面、组件） |
+| `monitoring/` | Glances、Uptime Kuma（monitoring.yaml） |
+| `notification/` | Apprise、手机通知路由（notification.yaml）；`templates/` 为路由与覆盖配置模板 |
+| `automation/` | Watchtower（automation.yaml） |
+| `macmini/` | Nginx Proxy Manager、Immich 机器学习与 NPM 转发表导出 |
+| `scripts/` | 拓扑检查/恢复脚本，以及独立的 Linux 单机安装脚本 |
+| `docs/restore.md` | 恢复步骤与私有文件清单 |
 
-原 `tools/`、`infrastructure/`、旧 Jellyfin / TrendRadar / WireGuard 等停用编排已从当前目录移除，需要时查 Git 历史。原应用层文件混有已过期的 Emby、字幕、下载器配置，本次只保留实际正在使用的部署定义。
+功能目录与启动入口的对应关系见 [FUNCTIONAL-LAYOUT.md](FUNCTIONAL-LAYOUT.md)。真实 `.env`、密钥和运行数据不入库。
 
-## 当前部署
+## 主机
 
-| 主机 | 地址 | 运行服务 |
+| 主机 | 地址 | 职责 |
 | --- | --- | --- |
-| NAS | 192.168.10.5 | Emby、Sublarr、Ani-RSS、qBittorrent、Immich 三容器、Glance、Glances、Kuma、Watchtower、Apprise、手机通知路由、AdGuard Home、SmartDNS、Sing-box、公网 SSH 隧道 |
+| NAS | 192.168.10.5 | Emby、Sublarr、Ani-RSS、qBittorrent、Immich 三容器、Glance、Glances、Uptime Kuma、Watchtower、Apprise、手机通知路由、AdGuard Home、SmartDNS、Sing-box、公网 SSH 隧道 |
 | Mac mini | 192.168.10.4 | Nginx Proxy Manager、Immich 机器学习 |
-| qBittorrent 独立网络地址 | 192.168.10.6:8080 | 下载 Web UI；额外使用内部 `qb_control` 网络 |
+| qBittorrent 独立地址 | 192.168.10.6:8080 | 下载 Web UI，域名经 Mac mini NPM 转发 |
 
-NAS 运行根目录为 `/volume1/docker/homelab`，媒体根目录为 `/volume1/homes/guangluo/entertainments`。公开 Compose 通过根 `.env` 中的 `HOMELAB_ROOT`、`MEDIA_ROOT` 参数指定这些路径，避免将编排所在目录误当数据目录。镜像固定为核验时容器实际使用的可拉取 registry digest，避免导出只有原 NAS 才能找到的本地 `sha256:` 镜像 ID。
+NAS 运行根目录为 `/volume1/docker/homelab`，媒体根目录为 `/volume1/homes/guangluo/entertainments`，容器内挂载为 `/media`（Emby 只读）。
 
-## 安装与恢复
-
-**按现有双主机拓扑完整恢复：**见 [恢复说明](docs/restore.md)。先恢复数据、网络与私有参数，再运行：
+## 检查与启动
 
 ```sh
 bash scripts/current.sh check nas
 bash scripts/current.sh apply nas
-# 在 Mac mini 上执行：
+# Mac mini 上执行：
 bash scripts/current.sh check macmini
 bash scripts/current.sh apply macmini
 ```
 
-这些命令会使用当前部署定义。当前 NAS/Mac mini 的容器和文件没有在此次上传中被修改；不要在原运行环境直接换用新路径重新启动全部项目。
+到达检查管线的状态出口独立于 media.yaml，需单独启动：
 
-**在新 Ubuntu / Debian 上安装可移植核心服务：**见 [脚本说明](scripts/README.md)。`install-linux-core.sh` 是单机 12 容器的简化部署，不是当前 19 容器拓扑的完整重建，也不迁移现有数据或家庭网络链路。
+```sh
+cd /volume1/docker/homelab
+docker compose -f media/workflow/media-arrival-status/status.yaml up -d
+```
 
-## 服务入口
+## 元数据与翻译
 
-| 服务 | 入口 | 后端 |
-| --- | --- | --- |
-| Glance | https://home.guangluo.top | NAS:6001 |
-| Emby | https://movie.guangluo.top | NAS:6100 |
-| Ani-RSS | https://anime.guangluo.top | NAS:6101 |
-| qBittorrent | https://download.guangluo.top | 192.168.10.6:8080 |
-| Immich | https://photo.guangluo.top | NAS:6104 |
-| Glances | https://top.guangluo.top | NAS:6002 |
-| Uptime Kuma | https://monitor.guangluo.top | NAS:6003 |
-| AdGuard Home | https://adguard.guangluo.top | NAS:6200 |
-| DSM | https://nas.guangluo.top | NAS:5001（HTTPS） |
-| NPM | https://nginx.guangluo.top | Mac mini:7001 |
+- Ani-RSS 使用 TMDB（zh-CN）刮削，写出 `tvshow.nfo`、分集 NFO 与海报；Emby 的 MetadataSavers 为空，只读取、不写回。
+- Emby 的 Bangumi 插件负责分集标题与简介（`TranslationPreference=Chinese`）。
+- `media/workflow/media-arrival-tools/media_arrival_monitor.py` 由 cron 每 2 分钟运行，把 Emby 中的英文简介交给 Sublarr 容器内的 DeepSeek 后端翻译并回写；每日上限为根 `.env` 的 `EMBY_TRANSLATION_DAILY_LIMIT`（默认 100），进度写入 `media/workflow/media-arrival-state/journal.json`，由状态容器暴露给 Glance 首页「元数据翻译」卡片。
 
-NPM 转发表还保留 `draw` 和 `read` 两条旧入口，后端对应服务已停用，已在导出 JSON 中标记 `backend_running: false`；不据此安装旧应用。NPM 的原始数据库、账号与证书不公开，转发表保留规则参数用于恢复参考。
+## Glance
 
-## 密钥、数据与外部依赖
+入口 [glance.yml](dashboard/glance/config/glance.yml)；页面、组件与凭据约定见 [Glance 文档](dashboard/glance/config/README.md)。只改页面时同步 `dashboard/glance/config/` 即可热重载；改环境变量需重建 Glance。凭据来自根 `.env` 与 `dashboard/.env.glance`。
 
-仓库包含完整的当前容器部署定义和可公开配置；真实 `.env`、API key、密码、WireGuard 私钥、SSH 隧道私钥、通知收件地址、数据库、照片与媒体数据不上传。含凭据的配置用 `.example` 提供结构，完整恢复仍需要自己的私有备份，具体清单见 [恢复说明](docs/restore.md)。
+## 网络
 
-Glance 沿用 `JELLYFIN_API_KEY` 变量名兼容 Emby，不代表使用 Jellyfin。SmartDNS / Sing-box 依赖 Mac mini 的 Surge SOCKS `192.168.10.4:6153`；Surge 订阅凭据、UDM/WireGuard 对端配置和云端 SSH 服务属于外部系统，不是本仓库容器。公网隧道仍转发一个已停用后端的端口，导出保留原配置并在恢复说明中注明。
+NAS 的 53 端口由 AdGuard Home 监听，SmartDNS / Sing-box 依赖 Mac mini 上 Surge 的 SOCKS `192.168.10.4:6153`。P2P、BT 与种子下载优先直连，规则与验证说明见 [P2P 直连文档](network/routing/README.md)。外部系统（Surge 订阅、UDM、云端 SSH 服务）不属于本仓库。
 
-运行数据和查询日志不属于 Git 备份。历史中曾暴露的凭据仍需撤销或轮换。
+## 密钥与数据
 
-## License
+真实 `.env`、API key、密码、WireGuard 与隧道私钥、通知收件地址、数据库、照片与媒体数据不进入版本库；含凭据的配置以 `.example` 提供结构。完整恢复需要自己的私有备份，清单见 [恢复说明](docs/restore.md)。公开历史中曾暴露的凭据仍应撤销或轮换。
 
-自有配置见 [LICENSE](LICENSE)。第三方域名/规则数据与 CA 证书的来源见 [恢复说明](docs/restore.md#规则数据与证书)。
+## 许可
+
+自有配置见 [LICENSE](LICENSE)。第三方规则数据与 CA 证书来源见恢复说明。

@@ -1,0 +1,9 @@
+- type: rss
+  title: Rust 官方动态
+  cache: 2h
+  limit: 12
+  collapse-after: 4
+  feeds:
+  - url: https://blog.rust-lang.org/feed.xml
+    title: Rust
+    limit: 6

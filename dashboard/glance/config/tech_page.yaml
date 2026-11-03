@@ -1,0 +1,16 @@
+- name: 数据库与开发
+  slug: tech
+  show-mobile-header: true
+  columns:
+  - size: small
+    widgets:
+    - $include: widget/development_bookmark.yaml
+    - $include: widget/development_releases.yaml
+  - size: full
+    widgets:
+    - $include: widget/geekpark_rss.yaml
+    - $include: widget/developer_topics_group.yaml
+    - $include: widget/community_group.yaml
+  - size: small
+    widgets:
+    - $include: widget/project_commits.yaml

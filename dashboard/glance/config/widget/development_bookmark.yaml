@@ -1,0 +1,28 @@
+- type: bookmarks
+  title: 开发文档与项目入口
+  groups:
+  - links:
+    - title: Rust 标准库
+      url: https://doc.rust-lang.org/std/
+    - title: Crates.io
+      url: https://crates.io/
+    - title: Docs.rs
+      url: https://docs.rs/
+    - title: 达梦文档
+      url: https://eco.dameng.com/document/dm/zh-cn/start/
+    - title: GitHub
+      url: https://github.com/guangl
+  - title: 数据库官方资料
+    links:
+    - title: PostgreSQL
+      url: https://www.postgresql.org/docs/
+    - title: DuckDB
+      url: https://duckdb.org/docs/
+    - title: Oracle 数据库博客
+      url: https://blogs.oracle.com/database/
+  - title: 我的项目
+    links:
+    - title: homelab-docker · 代码与 Issues
+      url: https://github.com/guangl/homelab-docker
+    - title: sqllog2db · 代码与 Issues
+      url: https://github.com/guangl/dm-database-sqllog2db

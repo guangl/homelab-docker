@@ -1,0 +1,27 @@
+- type: docker-containers
+  title: 后台服务状态
+  css-class: homelab-background
+  hide-by-default: true
+  running-only: false
+  format-container-names: true
+  containers:
+    glance:
+      name: Glance
+      icon: mdi:view-dashboard
+      hide: false
+    watchtower:
+      name: Watchtower
+      icon: mdi:update
+      hide: false
+    adguardhome:
+      name: AdGuard Home
+      icon: si:adguard
+      hide: false
+    filterhost:
+      name: 过滤列表服务
+      icon: mdi:filter
+      hide: false
+    wg-home:
+      name: WireGuard 服务端
+      icon: mdi:vpn
+      hide: false

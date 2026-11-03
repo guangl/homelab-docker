@@ -1,6 +1,6 @@
 # 部署脚本
 
-当前 19 容器双主机拓扑使用 `current.sh`，先阅读 [恢复说明](../docs/restore.md)。`check` 只检查，`apply` 会拉取镜像并启动；本次只上传文件，未对运行主机执行 apply。
+双主机拓扑使用 `current.sh`，功能目录与启动入口见 [FUNCTIONAL-LAYOUT.md](../FUNCTIONAL-LAYOUT.md)，先阅读 [恢复说明](../docs/restore.md)。`check` 只校验 Compose、`.env` 占位符与绑定挂载路径；`apply` 才会拉取镜像并启动。
 
 下面的单机脚本是独立的 12 容器核心服务安装器，不代表当前完整拓扑。
 

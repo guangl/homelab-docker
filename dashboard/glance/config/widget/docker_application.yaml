@@ -1,0 +1,42 @@
+- type: docker-containers
+  title: 影音与下载
+  hide-by-default: true
+  format-container-names: true
+  running-only: false
+  containers:
+    jellyfin:
+      id: jellyfin
+      name: Jellyfin
+      description: 家庭影音库：浏览电影、剧集与音乐，记录观看进度。
+      url: https://movie.guangluo.top
+      icon: si:jellyfin
+      hide: false
+    ani-rss:
+      id: ani-rss
+      name: Ani-RSS
+      description: 追番订阅与更新检查，自动整理并提交番剧下载任务。
+      url: https://anime.guangluo.top
+      icon: si:anilist
+      hide: false
+    qbittorrent:
+      id: qbittorrent
+      name: qBittorrent
+      description: 管理 BT 下载、做种与传输速度，查看任务进度。
+      url: http://192.168.10.6:8080
+      icon: si:qbittorrent
+      hide: false
+  css-class: homelab-services
+- type: docker-containers
+  title: 照片与备份
+  hide-by-default: true
+  format-container-names: true
+  running-only: false
+  containers:
+    immich-server:
+      id: immich-server
+      name: Immich 相册
+      description: 手机照片/视频自动备份与浏览，数据库与机器学习在后台容器里。
+      url: https://photo.guangluo.top
+      icon: mdi:image-multiple
+      hide: false
+  css-class: homelab-services

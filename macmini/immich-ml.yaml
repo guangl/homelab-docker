@@ -1,0 +1,33 @@
+# Immich machine-learning on Mac mini M4 (runs inside the colima VM)
+# Start / update:  docker compose -f ~/immich-ml/docker-compose.yml up -d
+# Status:          docker compose -f ~/immich-ml/docker-compose.yml ps
+# Logs:            docker compose -f ~/immich-ml/docker-compose.yml logs -f
+name: immich-ml
+
+services:
+  machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:v3.3.5
+    container_name: immich-machine-learning
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    volumes:
+      # persistent model cache (bind mount -> survives "colima delete")
+      - ./model-cache:/cache
+    environment:
+      MACHINE_LEARNING_CACHE_FOLDER: /cache
+      MACHINE_LEARNING_WORKERS: "2"
+      MACHINE_LEARNING_WORKER_TIMEOUT: "600"
+      MACHINE_LEARNING_MODEL_ARENA: "false"
+      TRANSFORMERS_CACHE: /cache
+      HF_HOME: /cache/hf-cache
+      DEVICE: cpu
+    # resource cap inside the 10 GiB colima VM (host has 16 GiB total)
+    mem_limit: 6g
+    memswap_limit: 6g
+    healthcheck:
+      test: ["CMD", "python3", "/usr/src/healthcheck.py"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 180s

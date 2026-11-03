@@ -1,0 +1,18 @@
+- type: custom-api
+  title: Air Quality
+  cache: 10m
+  url: https://api.waqi.info/feed/geo:30.584355;114.298572/?token=${WAQI_TOKEN}
+  template: "{{ $aqi := printf \"%03s\" (.JSON.String \"data.aqi\") }}\n{{ $aqiraw := .JSON.String \"data.aqi\" }}\n{{ $updated\
+    \ := .JSON.String \"data.time.iso\" }}\n{{ $humidity := .JSON.String \"data.iaqi.h.v\" }}\n{{ $ozone := .JSON.String \"\
+    data.iaqi.o3.v\" }}\n{{ $pm25 := .JSON.String \"data.iaqi.pm25.v\" }}\n{{ $pressure := .JSON.String \"data.iaqi.p.v\"\
+    \ }}\n\n<div class=\"flex justify-between\">\n  <div class=\"size-h5\">\n    {{ if le $aqi \"050\" }}\n      <div class=\"\
+    color-positive\">Good air quality</div>\n    {{ else if le $aqi \"100\" }}\n      <div class=\"color-primary\">Moderate\
+    \ air quality</div>\n    {{ else }}\n      <div class=\"color-negative\">Bad air quality</div>\n    {{ end }}\n  </div>\n\
+    </div>\n\n<div class=\"color-highlight size-h2\">AQI: {{ $aqiraw }}</div>\n<div style=\"border-bottom: 1px solid; margin-block:\
+    \ 10px;\"></div>\n\n<div class=\"margin-block-2\">\n  <div style=\"display: grid; grid-template-columns: 1fr 1fr; gap:\
+    \ 10px;\">\n\n    <div>\n      <div class=\"size-h3 color-highlight\">{{ $humidity }}%</div>\n      <div class=\"size-h6\"\
+    >HUMIDITY</div>\n    </div>\n\n    <div>\n      <div class=\"size-h3 color-highlight\">{{ $ozone }} μg/m³</div>\n    \
+    \  <div class=\"size-h6\">OZONE</div>\n    </div>\n\n    <div>\n      <div class=\"size-h3 color-highlight\">{{ $pm25\
+    \ }} μg/m³</div>\n      <div class=\"size-h6\">PM2.5</div>\n    </div>\n\n    <div>\n      <div class=\"size-h3 color-highlight\"\
+    >{{ $pressure }} hPa</div>\n      <div class=\"size-h6\">PRESSURE</div>\n    </div>\n\n  </div>\n\n  <div class=\"size-h6\"\
+    \ style=\"margin-top: 10px;\">Last Updated at {{ slice $updated 11 16 }}</div>\n</div>\n"

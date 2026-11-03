@@ -1,0 +1,133 @@
+# 每个功能目录仅保留同名 Compose 文件；密钥由根 .env 注入。
+name: homelab_application
+
+services:
+  immich-database:
+    command:
+    - postgres
+    - -c
+    - config_file=/etc/postgresql/postgresql.conf
+    - -c
+    - shared_buffers=1024MB
+    - -c
+    - maintenance_work_mem=256MB
+    - -c
+    - effective_cache_size=8GB
+    container_name: immich-database
+    deploy:
+      resources:
+        limits:
+          memory: '3221225472'
+      placement: {}
+    entrypoint:
+    - /bin/bash
+    - -c
+    - . /usr/local/bin/set-env.sh; exec /usr/local/bin/docker-entrypoint.sh "$$@"
+    - --
+    environment:
+      DB_STORAGE_TYPE: HDD
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: --data-checksums
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD:?请在根 .env 中设置 IMMICH_DB_PASSWORD}
+      POSTGRES_USER: immich
+      TZ: Asia/Shanghai
+    healthcheck: {}
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    networks:
+      homelab_application_default: null
+    restart: unless-stopped
+    shm_size: '1073741824'
+    tmpfs:
+    - /var/run/postgresql:uid=1026,gid=100,mode=3775
+    user: 1026:100
+    volumes:
+    - type: bind
+      source: /volume1/docker/homelab/photos/immich/postgres
+      target: /var/lib/postgresql/data
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /volume1/docker/homelab/photos/immich/postgresql.conf
+      target: /etc/postgresql/postgresql.conf
+      read_only: true
+
+  immich-redis:
+    command: null
+    container_name: immich-redis
+    deploy:
+      resources:
+        limits:
+          memory: '536870912'
+      placement: {}
+    entrypoint: null
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - redis-cli ping | grep -q PONG || exit 1
+    image: docker.io/valkey/valkey:9@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d
+    networks:
+      homelab_application_default: null
+    restart: unless-stopped
+    user: 1026:100
+
+  immich-server:
+    cpu_shares: 2048
+    command: null
+    container_name: immich-server
+    depends_on:
+      immich-database:
+        condition: service_healthy
+        required: true
+      immich-redis:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          memory: '10737418240'
+      placement: {}
+    entrypoint: null
+    environment:
+      DB_DATABASE_NAME: immich
+      DB_HOSTNAME: immich-database
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD:?请在根 .env 中设置 IMMICH_DB_PASSWORD}
+      DB_PORT: '5432'
+      DB_USERNAME: immich
+      IMMICH_MACHINE_LEARNING_URL: http://192.168.10.4:3003
+      NODE_OPTIONS: --max-old-space-size=4096
+      REDIS_HOSTNAME: immich-redis
+      TZ: Asia/Shanghai
+    healthcheck: {}
+    image: ghcr.io/immich-app/immich-server:v3.3.5
+    networks:
+      homelab_application_default: null
+    ports:
+    - mode: ingress
+      target: 2283
+      published: '6104'
+      protocol: tcp
+    restart: unless-stopped
+    user: 1026:100
+    volumes:
+    - type: bind
+      source: /volume1/docker/homelab/photos/immich/data
+      target: /data
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /volume1/homes/guangluo/entertainments/Photos
+      target: /mnt/photos
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true

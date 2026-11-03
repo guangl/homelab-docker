@@ -1,0 +1,18 @@
+- type: rss
+  title: 开发工具版本更新
+  cache: 12h
+  limit: 5
+  collapse-after: 5
+  feeds:
+  - url: https://github.com/rust-lang/rust/releases.atom
+    title: Rust
+    limit: 1
+  - url: https://github.com/guangl/dm-database-sqllog2db/releases.atom
+    title: sqllog2db
+    limit: 1
+  - url: https://github.com/docker/compose/releases.atom
+    title: Docker Compose
+    limit: 1
+  - url: https://github.com/duckdb/duckdb/releases.atom
+    title: DuckDB
+    limit: 1
