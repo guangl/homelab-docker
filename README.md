@@ -48,9 +48,9 @@ docker compose -f media/workflow/media-arrival-status/status.yaml up -d
 
 ## 元数据与翻译
 
-- Ani-RSS 使用 TMDB（zh-CN）刮削，写出 `tvshow.nfo`、分集 NFO 与海报；Emby 的 MetadataSavers 为空，只读取、不写回。
-- Emby 的 Bangumi 插件负责分集标题与简介（`TranslationPreference=Chinese`）。
-- `media/workflow/media-arrival-tools/media_arrival_monitor.py` 由 cron 每 2 分钟运行，把 Emby 中的英文简介交给 Sublarr 容器内的 DeepSeek 后端翻译并回写；每日上限为根 `.env` 的 `EMBY_TRANSLATION_DAILY_LIMIT`（默认 100），进度写入 `media/workflow/media-arrival-state/journal.json`，由状态容器暴露给 Glance 首页「元数据翻译」卡片。
+- Ani-RSS 只负责下载与重命名，刮削（`scrape`）关闭：不再生成 NFO 与海报。
+- Emby「动画」库由元数据抓取器补齐：Series / Season 用 TheMovieDb（zh-CN）+ Bangumi，Episode 用 Bangumi + TheMovieDb；Bangumi 插件 `TranslationPreference=Chinese`。没有本地 NFO 的新番依靠这条链路拿到中文番剧名、简介与季名。
+- `media/workflow/media-arrival-tools/media_arrival_monitor.py` 由 cron 每 2 分钟运行，做两件事：把 Emby 中非中文的简介交给 Sublarr 容器内的 DeepSeek 后端翻译并回写；把 TMDB 只有「第 N 集」占位符或回退成文件名的分集标题，按 TMDB 中文原名（或日文原名机器翻译）回写为中文。每日上限为根 `.env` 的 `EMBY_TRANSLATION_DAILY_LIMIT`（默认 100，简介与分集标题共用），每轮最多 2 条简介 + 3 条标题，进度写入 `media/workflow/media-arrival-state/journal.json`，由状态容器暴露给 Glance 首页「元数据翻译」卡片。
 
 ## Glance
 

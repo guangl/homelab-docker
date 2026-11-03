@@ -58,9 +58,11 @@ def status():
         'last_repaired': last.get('overview_repaired', 0),
         'last_errors': len(errors),
         'error_text': '; '.join(str(e.get('stage')) + ' ' + str(e.get('error')) for e in errors),
-        'repaired_total': len(journal.get('metadata') or []),
+        'repaired_total': len(journal.get('metadata') or []) + len(journal.get('titles') or []),
+        'overview_repaired_total': len(journal.get('metadata') or []),
+        'title_repaired_total': len(journal.get('titles') or []),
         'budget_today': budget,
-        'budget_limit': BUDGET_LIMIT,
+        'budget_limit': int(journal.get('translation_limit') or BUDGET_LIMIT),
     }
 
 
