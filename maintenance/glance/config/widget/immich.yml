@@ -1,7 +1,7 @@
 - type: custom-api
   title: 照片库
   cache: 1h
-  url: ${IMMICH_URL}/api/server/statistics
+  url: http://192.168.10.5:6104/api/server/statistics
   headers:
     x-api-key: ${IMMICH_API_KEY}
     Accept: application/json

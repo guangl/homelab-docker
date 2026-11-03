@@ -7,8 +7,10 @@
   repositories:
     - glanceapp/glance
     - immich-app/immich
-    - jellyfin/jellyfin
     - AdguardTeam/AdGuardHome
     - louislam/uptime-kuma
-    - jeessy/ddns-go
+    - sagernet/sing-box
+    - pymumu/smartdns
+    - caronc/apprise
+    - NginxProxyManager/nginx-proxy-manager
     - qbittorrent/qBittorrent

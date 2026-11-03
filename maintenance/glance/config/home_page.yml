@@ -19,4 +19,4 @@
       widgets:
         - $include: widget/service_alerts.yml
         - $include: widget/immich.yml
-        - $include: widget/jellyfin.yml
+        - $include: widget/emby.yml

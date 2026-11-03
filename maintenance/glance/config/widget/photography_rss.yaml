@@ -1,0 +1,9 @@
+- type: rss
+  title: 摄影新闻与技术
+  cache: 4h
+  limit: 12
+  collapse-after: 6
+  feeds:
+  - url: https://petapixel.com/feed/
+    title: PetaPixel
+    limit: 6

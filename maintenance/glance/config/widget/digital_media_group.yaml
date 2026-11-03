@@ -1,0 +1,6 @@
+- type: group
+  widgets:
+  - $include: sspai_rss.yaml
+  - $include: ithome_rss.yaml
+  - $include: ifanr_rss.yaml
+  - $include: photography_rss.yaml

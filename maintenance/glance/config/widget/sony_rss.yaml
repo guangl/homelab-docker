@@ -1,0 +1,9 @@
+- type: rss
+  title: Sony 器材与镜头（非官方）
+  cache: 4h
+  limit: 12
+  collapse-after: 5
+  feeds:
+  - url: https://www.sonyalpharumors.com/feed/
+    title: SonyAlphaRumors
+    limit: 6

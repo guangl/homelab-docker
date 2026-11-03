@@ -25,11 +25,11 @@
     - title: HOMELAB
       links:
         - title: Immich
-          url: http://192.168.10.5:6104
-        - title: n8n
-          url: http://192.168.10.5:6107
+          url: https://photo.guangluo.top
+        - title: Emby
+          url: https://movie.guangluo.top
         - title: Glance
-          url: http://192.168.10.5:6001
+          url: https://home.guangluo.top
     - title: AI 助手
       links:
         - title: openai

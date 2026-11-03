@@ -1,11 +1,13 @@
 - type: custom-api
   title: UniFi 网络
   cache: 5m
-  url: ${UNIFI_URL}/proxy/network/api/stat/sites
-  headers:
-    X-API-KEY: ${UNIFI_API_KEY}
-    Accept: application/json
+  allow-insecure: true
+  options:
+    key: ${UNIFI_API_KEY}
   template: |-
+    {{ $key := .Options.StringOr "key" "" }}
+    {{ $data := newRequest "https://192.168.10.1/proxy/network/api/stat/sites" | withHeader "X-API-KEY" $key | getResponse }}
+    {{ with $data }}
     {{ if eq .Response.StatusCode 200 }}
       {{ if .JSON.Array "data" }}
         {{ range .JSON.Array "data" }}
@@ -20,3 +22,5 @@
         {{ end }}
       {{ else }}<p>未返回站点数据，请确认控制器接口与 API 密钥权限。</p>{{ end }}
     {{ else }}<p>网络统计暂不可用，请检查 UniFi 地址、接口与密钥。</p>{{ end }}
+
+    {{ end }}

@@ -1,0 +1,8 @@
+- type: rss
+  title: 爱范儿
+  cache: 2h
+  limit: 10
+  collapse-after: 5
+  feeds:
+  - url: https://www.ifanr.com/feed
+    title: 爱范儿

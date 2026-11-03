@@ -1,113 +1,78 @@
 - type: docker-containers
-  title: 全部容器状态
-  hide-by-default: false
+  title: NAS 容器状态
+  hide-by-default: true
   format-container-names: true
   running-only: false
   containers:
-    jellyfin:
-      id: jellyfin
-      name: Jellyfin
-      description: Media Server
+    media-emby:
+      name: Emby
+      description: 影音库与观看进度
       url: https://movie.guangluo.top
-      icon: si:jellyfin
+      icon: mdi:play-box
       hide: false
     ani-rss:
-      id: ani-rss
-      name: Ani Rss
-      description: Anime RSS Downloader
+      name: Ani-RSS
+      description: 追番订阅与自动下载
       url: https://anime.guangluo.top
       icon: si:anilist
       hide: false
     qbittorrent:
-      id: qbittorrent
       name: qBittorrent
-      description: Torrent Client
-      url: http://download.guangluo.top
+      description: 独立地址 192.168.10.6 的下载服务
+      url: https://download.guangluo.top
       icon: si:qbittorrent
       hide: false
-    excalidraw:
-      id: excalidraw
-      name: Excalidraw
-      description: Whiteboard Tool
-      url: https://draw.guangluo.top
-      icon: si:excalidraw
-      hide: false
     immich-server:
-      id: immich
-      name: Immich Server
-      description: Photo Backup and Management
-      url: http://192.168.10.5:6104
+      name: Immich
+      description: 照片与视频备份；机器学习运行在 Mac mini
+      url: https://photo.guangluo.top
       icon: si:immich
-      hide: false
-    immich-machine-learning:
-      icon: si:immich
-      parent: immich
-    postgres:
-      icon: si:postgresql
-    redis:
-      icon: si:redis
-    drawdb:
-      name: DrawDB
-      description: 数据库关系图
-      url: https://db.guangluo.top/editor
-      icon: si:databricks
       hide: false
     glances:
-      id: glances
-      name: glances
-      description: System Monitoring Tool
+      name: Glances
+      description: NAS 资源监控
       url: https://top.guangluo.top
-      icon: si:htop
-      hide: false
-    ddns-go:
-      id: ddns-go
-      name: DDNS Go
-      description: Dynamic DNS Service
-      url: https://ddns.guangluo.top
-      icon: si:nextdns
+      icon: mdi:server
       hide: false
     uptime-kuma:
-      id: uptime-kuma
       name: Uptime Kuma
-      description: Monitor Website Uptime
+      description: 可用性监控与告警历史
       url: https://monitor.guangluo.top
       icon: si:uptimekuma
       hide: false
     adguardhome:
-      id: adguardhome
       name: AdGuard Home
-      description: Network-wide Ad Blocker
+      description: DNS 查询与过滤
       url: https://adguard.guangluo.top
       icon: si:adguard
       hide: false
     glance:
-      name: Glance 首页
-      hide: false
-    smartdns:
-      name: SmartDNS
-      hide: false
-    peanut:
-      name: PeaNUT UPS
+      name: Glance
       hide: false
     watchtower:
       name: Watchtower
       hide: false
-    trendradar:
-      name: TrendRadar
+    smartdns:
+      name: SmartDNS
       hide: false
-    n8n:
-      name: n8n 自动化
-      url: http://192.168.10.5:6107
-      icon: si:n8n
-    dnsq:
-      name: DNS 分流
-      icon: mdi:dns
-    tproxy:
-      name: 隧道转发
-      icon: mdi:swap-horizontal
-    filterhost:
-      name: 过滤列表服务
-      icon: mdi:filter
-    wg-home:
-      name: WireGuard 服务端
-      icon: mdi:vpn
+    network-gateway:
+      name: Sing-box 网关
+      hide: false
+    public-sites-tunnel:
+      name: AutoSSH 公网隧道
+      hide: false
+    apprise:
+      name: Apprise 通知
+      hide: false
+    phone-notification-router:
+      name: 手机通知路由
+      hide: false
+    media-sublarr:
+      name: Sublarr 字幕
+      hide: false
+    immich-database:
+      name: Immich PostgreSQL
+      hide: false
+    immich-redis:
+      name: Immich Valkey
+      hide: false

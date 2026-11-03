@@ -1,7 +1,7 @@
 name: homelab_maintenance
 
 # 维护层（6000-6099）
-# 端口：6001 glance、6002 glances、6003 ddns-go、6004 uptime-kuma、6005 peanut
+# Glance 使用 6001；其他服务段为历史编排，当前部署见 README.md。
 # 约定：容器路径相对本文件，运行时数据目录已在 .gitignore 中排除
 # 部署：docker compose --env-file .env -f maintenance/maintenance.yaml up -d
 
@@ -13,11 +13,6 @@ services:
     env_file:
       - .env.glance
     environment:
-      GLANCES_OPT: -w
-      PERIOD: past_24_hours
-      LANGUAGE: All
-      UPTIME_KUMA_URL: https://monitor.guangluo.top
-      UPTIME_KUMA_STATUS_SLUG: instance
       PUID: 1026
       PGID: 100
       TZ: Asia/Shanghai
@@ -25,10 +20,6 @@ services:
       ADGUARD_USERNAME: ${ADGUARD_USERNAME:?请在仓库根 .env 中设置}
       ADGUARD_PASSWORD: ${ADGUARD_PASSWORD:?请在仓库根 .env 中设置}
       WAQI_TOKEN: ${WAQI_TOKEN:?请在仓库根 .env 中设置}
-      # NAS 自身不走隧道（避免自环），外网 RSS 需经 Surge 的 HTTP 代理出网
-      HTTP_PROXY: http://192.168.10.4:6152
-      HTTPS_PROXY: http://192.168.10.4:6152
-      NO_PROXY: localhost,127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,.guangluo.top
     ports:
       - 6001:8080
     volumes:

@@ -9,6 +9,7 @@
     - size: full
       widgets:
         - $include: widget/service_monitor.yml
+        - $include: widget/macmini.yml
         - $include: widget/docker.yml
     - size: small
       widgets:

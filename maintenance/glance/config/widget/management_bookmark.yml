@@ -1,10 +1,17 @@
 - type: bookmarks
   title: 管理入口
   groups:
-    - links:
-        - title: 主机 CPU / 内存 / 磁盘（Glances）
+    - title: NAS
+      links:
+        - title: DSM
+          url: https://nas.guangluo.top
+        - title: CPU / 内存 / 磁盘（Glances）
           url: https://top.guangluo.top
         - title: Uptime Kuma 历史与告警
           url: https://monitor.guangluo.top
-        - title: DDNS 管理
-          url: https://ddns.guangluo.top
+    - title: Mac mini 与网络
+      links:
+        - title: Nginx Proxy Manager
+          url: https://nginx.guangluo.top
+        - title: UniFi 控制台
+          url: https://192.168.10.1

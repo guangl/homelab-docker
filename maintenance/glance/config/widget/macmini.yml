@@ -1,0 +1,12 @@
+- type: monitor
+  title: Mac mini 服务
+  cache: 1m
+  sites:
+    - title: Nginx Proxy Manager
+      url: https://nginx.guangluo.top
+      check-url: http://192.168.10.4:7001
+      icon: mdi:server-network
+    - title: Immich 机器学习
+      url: http://192.168.10.4:3003
+      check-url: http://192.168.10.4:3003/ping
+      icon: si:immich
