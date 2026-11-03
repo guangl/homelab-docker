@@ -9,4 +9,4 @@
     - title: Immich 机器学习
       url: http://192.168.10.4:3003
       check-url: http://192.168.10.4:3003/ping
-      icon: si:immich
+      icon: mdi:brain

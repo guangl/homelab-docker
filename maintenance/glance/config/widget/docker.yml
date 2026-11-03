@@ -47,32 +47,42 @@
       icon: si:adguard
       hide: false
     glance:
+      icon: mdi:view-dashboard-outline
       name: Glance
       hide: false
     watchtower:
+      icon: mdi:package-up
       name: Watchtower
       hide: false
     smartdns:
+      icon: mdi:dns
       name: SmartDNS
       hide: false
     network-gateway:
+      icon: mdi:router-network
       name: Sing-box 网关
       hide: false
     public-sites-tunnel:
+      icon: mdi:swap-horizontal-circle-outline
       name: AutoSSH 公网隧道
       hide: false
     apprise:
+      icon: mdi:bell-ring-outline
       name: Apprise 通知
       hide: false
     phone-notification-router:
+      icon: mdi:cellphone-message
       name: 手机通知路由
       hide: false
     media-sublarr:
+      icon: mdi:subtitles-outline
       name: Sublarr 字幕
       hide: false
     immich-database:
+      icon: si:postgresql
       name: Immich PostgreSQL
       hide: false
     immich-redis:
+      icon: mdi:memory
       name: Immich Valkey
       hide: false
