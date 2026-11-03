@@ -43,3 +43,5 @@ UniFi 使用 UDM 本地 API key 与 HTTPS；因其证书为自签名，仅该组
 样式集中在 `glance.yml` 的 `document.head`；`widget/intro.yml` 和 `widget/shortcuts.yml` 为静态 HTML，不额外加载第三方字体或图标脚本。UniFi 卡片的模板请求需要在 `newRequest` 管道中设置 `withAllowInsecure true`；顶层 `allow-insecure` 不会自动传递给模板内的独立请求。设备状态、在线说明和有线/无线数量均来自控制器返回数据。
 
 首页已移除 Claude 与待办组件；开发资讯不再追踪停止维护的 dameng-cli、sqllog2db，改为技术社区内容与开发工具更新的双栏布局。
+
+资讯分工：首页只展示少数派，Hacker News 与 Lobsters 仅在开发资讯页展示，避免跨页面重复。

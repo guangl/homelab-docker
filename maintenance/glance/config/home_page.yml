@@ -15,7 +15,7 @@
       widgets:
         - $include: widget/bookmark.yml
         - $include: widget/service_alerts.yml
-        - $include: widget/news_group.yml
+        - $include: widget/rss.yml
     - size: small
       widgets:
         - $include: widget/calendar.yml
