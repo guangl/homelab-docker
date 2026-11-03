@@ -1,18 +1,46 @@
 # homelab-docker
 
-家庭实验室配置仓库。2026-11-03 已对照 NAS 与 Mac mini 的实际容器、Nginx Proxy Manager 转发配置更新 Glance。
+当前家庭实验室的部署配置。**2026-11-03 已通过 NAS 与 Mac mini 实机只读核对全部 19 个运行容器**，使用实际 Compose、容器参数、镜像摘要和挂载配置整理。不是旧分层编排的整组启动入口。
+
+## 当前配置在哪
+
+| 目录 | 内容 |
+| --- | --- |
+| [`deploy/nas/`](deploy/nas/) | NAS 的 17 个容器，8 个实际部署单元 |
+| [`deploy/macmini/`](deploy/macmini/) | NPM、Immich 机器学习及 NPM 转发表 |
+| [`deploy/inventory.json`](deploy/inventory.json) | 核验时的服务、端口、网络、原 Compose 路径 |
+| [`templates/runtime/`](templates/runtime/) | 当前 DNS、网关规则、通知路由、数据库配置及脱敏模板 |
+| [`maintenance/glance/config/`](maintenance/glance/config/) | 当前 Glance 页面与组件 |
+| [`network/routing/`](network/routing/) | P2P 直连约定与验证说明 |
+| [`scripts/`](scripts/) | 当前拓扑检查/恢复脚本和独立的 Linux 核心服务安装脚本 |
+
+原 `tools/`、`infrastructure/`、旧 Jellyfin / TrendRadar / WireGuard 等停用编排已从当前目录移除，需要时查 Git 历史。原应用层文件混有已过期的 Emby、字幕、下载器配置，本次只保留实际正在使用的部署定义。
 
 ## 当前部署
 
-| 主机 | 地址 | 职责 |
+| 主机 | 地址 | 运行服务 |
 | --- | --- | --- |
-| NAS | 192.168.10.5 | DSM、影音、相册、DNS、网络网关、通知与监控 |
-| Mac mini | 192.168.10.4 | Surge、Nginx Proxy Manager、Immich 机器学习 |
-| qBittorrent 独立网络地址 | 192.168.10.6:8080 | 下载 Web UI，域名由 Mac mini NPM 转发 |
+| NAS | 192.168.10.5 | Emby、Sublarr、Ani-RSS、qBittorrent、Immich 三容器、Glance、Glances、Kuma、Watchtower、Apprise、手机通知路由、AdGuard Home、SmartDNS、Sing-box、公网 SSH 隧道 |
+| Mac mini | 192.168.10.4 | Nginx Proxy Manager、Immich 机器学习 |
+| qBittorrent 独立网络地址 | 192.168.10.6:8080 | 下载 Web UI；额外使用内部 `qb_control` 网络 |
 
-NAS 当前运行 17 个容器：`media-emby`、`ani-rss`、`qbittorrent`、`immich-server`、`immich-database`、`immich-redis`、`media-sublarr`、`glance`、`glances`、`uptime-kuma`、`watchtower`、`adguardhome`、`smartdns`、`network-gateway`、`public-sites-tunnel`、`apprise`、`phone-notification-router`。
+NAS 运行根目录为 `/volume1/docker/homelab`，媒体根目录为 `/volume1/homes/guangluo/entertainments`。公开 Compose 通过根 `.env` 中的 `HOMELAB_ROOT`、`MEDIA_ROOT` 参数指定这些路径，避免将编排所在目录误当数据目录。镜像固定为核验时容器实际使用的可拉取 registry digest，避免导出只有原 NAS 才能找到的本地 `sha256:` 镜像 ID。
 
-Mac mini 当前运行 `nginx-proxy-manager` 与 `immich-machine-learning`，机器学习服务监听 3003，NPM 管理监听 7001、反代监听 80/443。Glance 通过 NAS 本机 socket 展示 NAS 容器，通过 HTTP 检查展示 Mac mini 服务。
+## 安装与恢复
+
+**按现有双主机拓扑完整恢复：**见 [恢复说明](docs/restore.md)。先恢复数据、网络与私有参数，再运行：
+
+```sh
+bash scripts/current.sh check nas
+bash scripts/current.sh apply nas
+# 在 Mac mini 上执行：
+bash scripts/current.sh check macmini
+bash scripts/current.sh apply macmini
+```
+
+这些命令会使用当前部署定义。当前 NAS/Mac mini 的容器和文件没有在此次上传中被修改；不要在原运行环境直接换用新路径重新启动全部项目。
+
+**在新 Ubuntu / Debian 上安装可移植核心服务：**见 [脚本说明](scripts/README.md)。`install-linux-core.sh` 是单机 12 容器的简化部署，不是当前 19 容器拓扑的完整重建，也不迁移现有数据或家庭网络链路。
 
 ## 服务入口
 
@@ -29,28 +57,16 @@ Mac mini 当前运行 `nginx-proxy-manager` 与 `immich-machine-learning`，机�
 | DSM | https://nas.guangluo.top | NAS:5001（HTTPS） |
 | NPM | https://nginx.guangluo.top | Mac mini:7001 |
 
-上述反代由 Mac mini NPM 管理。NPM 仍有旧 `draw`、`read` 条目，但 NAS 已无对应运行容器；Glance 不再展示这些入口。当前 DNS 容器为 AdGuard Home 与 SmartDNS，网关容器为 Sing-box，公网隧道由 AutoSSH 运行；旧 dnsq/tproxy/wg-home 配置不代表当前链路。
+NPM 转发表还保留 `draw` 和 `read` 两条旧入口，后端对应服务已停用，已在导出 JSON 中标记 `backend_running: false`；不据此安装旧应用。NPM 的原始数据库、账号与证书不公开，转发表保留规则参数用于恢复参考。
 
-## Glance 配置与部署
+## 密钥、数据与外部依赖
 
-入口：[`maintenance/glance/config/glance.yml`](maintenance/glance/config/glance.yml)。页面、组件、凭据约定和更新步骤见 [Glance 文档](maintenance/glance/config/README.md)。
+仓库包含完整的当前容器部署定义和可公开配置；真实 `.env`、API key、密码、WireGuard 私钥、SSH 隧道私钥、通知收件地址、数据库、照片与媒体数据不上传。含凭据的配置用 `.example` 提供结构，完整恢复仍需要自己的私有备份，具体清单见 [恢复说明](docs/restore.md)。
 
-只同步 `maintenance/glance/config/` 可热重载现有 Glance。修改环境变量时才重新创建 Glance；根 `.env` 和 `maintenance/.env.glance` 均不提交。保留现有 Emby key 的兼容变量名 `JELLYFIN_API_KEY`，不代表后端仍为 Jellyfin。
+Glance 沿用 `JELLYFIN_API_KEY` 变量名兼容 Emby，不代表使用 Jellyfin。SmartDNS / Sing-box 依赖 Mac mini 的 Surge SOCKS `192.168.10.4:6153`；Surge 订阅凭据、UDM/WireGuard 对端配置和云端 SSH 服务属于外部系统，不是本仓库容器。公网隧道仍转发一个已停用后端的端口，导出保留原配置并在恢复说明中注明。
 
-## 分流约定
-
-Glance 不设置显式代理，境内外请求由现有 SmartDNS / ip2region 分流链路判断。P2P、BT 和种子下载优先直连，规则与验证说明见 [P2P 直连文档](network/routing/README.md)。
-
-## 仓库与运行环境的边界
-
-仓库的 `application/`、`infrastructure/`、`network/`、`tools/` 以及维护层其他服务段包含历史编排，尚未完整同步当前 NAS 的独立 Compose 项目。**不要按旧文档整组启动这些文件**：可能复活旧服务、冲突现有容器或端口。此次更新范围为 Glance 及其文档，不迁移其他运行服务。
-
-NAS 运行根目录为 `/volume1/docker/homelab`。部署前先备份现有配置，按目标服务的实际 Compose 文件操作。运行时数据库、照片、媒体库、日志和密钥不属于 Git 备份；不要覆盖或清理这些目录。
-
-## 密钥与历史
-
-真实 `.env`、API key、WireGuard 配置、隧道私钥和运行数据不进入版本库；模板仅保留占位符。公开历史曾经过清理，后续提交以当前 GitHub main 为基础，不把旧本地历史合并回来。历史中曾暴露的凭据仍应撤销或轮换。
+运行数据和查询日志不属于 Git 备份。历史中曾暴露的凭据仍需撤销或轮换。
 
 ## License
 
-见 [LICENSE](LICENSE)。
+自有配置见 [LICENSE](LICENSE)。第三方域名/规则数据与 CA 证书的来源见 [恢复说明](docs/restore.md#规则数据与证书)。

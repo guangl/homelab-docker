@@ -1,0 +1,38 @@
+name: media-emby
+services:
+  emby:
+    image: emby/embyserver@sha256:7082c63b10a2fcb3805a7eaebba407d5723bc57c085c9f0b29b7d0a702765cc1
+    container_name: media-emby
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      UID: '1026'
+      GID: '100'
+      GIDLIST: '0'
+      UMASK: '022'
+      PUID: '1026'
+      PGID: '100'
+    ports:
+    - 0.0.0.0:6100:8096
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/application/emby/config
+      target: /config
+      type: bind
+      bind:
+        create_host_path: false
+    - source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media
+      target: /media
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    networks:
+    - homelab_application_default
+    mem_limit: 2g
+    memswap_limit: 2g
+    mem_swappiness: 0
+    labels:
+      com.centurylinklabs.watchtower.enable: 'false'
+networks:
+  homelab_application_default:
+    external: true

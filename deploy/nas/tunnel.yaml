@@ -1,0 +1,53 @@
+name: homelab-cloud-relay
+services:
+  tunnel:
+    image: jnovack/autossh@sha256:57a2117fc0498c374f66fef2199d186e2f11509e3ab35c62b5412644287edfaf
+    container_name: public-sites-tunnel
+    restart: unless-stopped
+    network_mode: host
+    entrypoint:
+    - /usr/bin/autossh
+    environment:
+      AUTOSSH_GATETIME: '0'
+      AUTOSSH_POLL: '30'
+    command:
+    - -M
+    - '0'
+    - -NT
+    - -p
+    - '22'
+    - -i
+    - /run/ssh/id_ed25519
+    - -o
+    - BatchMode=yes
+    - -o
+    - IdentitiesOnly=yes
+    - -o
+    - StrictHostKeyChecking=yes
+    - -o
+    - UserKnownHostsFile=/run/ssh/known_hosts
+    - -o
+    - ExitOnForwardFailure=yes
+    - -o
+    - ServerAliveInterval=15
+    - -o
+    - ServerAliveCountMax=2
+    - -o
+    - ConnectTimeout=10
+    - -R
+    - 127.0.0.1:16001:192.168.10.5:6001
+    - -R
+    - 127.0.0.1:16106:192.168.10.5:6106
+    - ${TUNNEL_USER:?设置 TUNNEL_USER}@${TUNNEL_HOST:?设置 TUNNEL_HOST}
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/network/cloud-relay/secrets
+      target: /run/ssh
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '2'

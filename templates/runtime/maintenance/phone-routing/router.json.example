@@ -1,0 +1,6 @@
+{
+  "mail": "REPLACE_APPRISE_EMAIL_URL",
+  "bark": "REPLACE_APPRISE_BARK_URL",
+  "user": "nas-admin",
+  "password": "REPLACE_APPRISE_PASSWORD"
+}

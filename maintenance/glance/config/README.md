@@ -30,9 +30,9 @@ UniFi 使用 UDM 本地 API key 与 HTTPS；因其证书为自签名，仅该组
 1. 先备份 NAS 的 `/volume1/docker/homelab/maintenance/glance/config/`。
 2. 将此目录完整同步到 NAS 相同位置，保留 `widget/` 层级。只修改 YAML 时支持热重载；不要覆盖真实 `.env.glance`。
 3. 使用实际容器校验：`docker exec glance /app/glance -config /app/config/glance.yml config:validate`。
-4. 访问 `http://192.168.10.5:6001/home` 和 `/homelab`，检查日志及卡片。改环境变量后才需要重新创建容器；已有 NAS 编排优先，不要整组启动仓库历史服务。
+4. 访问 `http://192.168.10.5:6001/home` 和 `/homelab`，检查日志及卡片。改环境变量后才需要重新创建容器；当前完整编排见 `deploy/nas/`；重建前先核对挂载路径与外部网络。
 
-根维护编排中的 Glance 服务可单独使用：`docker compose --env-file .env -f maintenance/maintenance.yaml up -d --no-deps glance`。执行前需准备 `.env.glance` 及根 `.env`；该命令不用于重建其他现有服务。
+当前维护编排中的 Glance 服务可单独使用：`docker compose --env-file .env -f deploy/nas/maintenance.yaml up -d --no-deps glance`。执行前需准备 `.env.glance` 及根 `.env`；该命令不用于重建其他现有服务。
 
 资讯与 GitHub 组件有缓存，匿名 GitHub API 可能受限；真实 API 权限应在 NAS 上检查。运行配置、数据、密钥不进 Git。
 

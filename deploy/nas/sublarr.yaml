@@ -1,0 +1,35 @@
+name: media-sublarr
+services:
+  sublarr:
+    image: abrechen2/sublarr@sha256:d50a05cc127f5823934782cdc686b5cdcaee20573c7cf9eed0c5f87247e8b142
+    container_name: media-sublarr
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      PUID: '1026'
+      PGID: '100'
+      UMASK: '022'
+    ports:
+    - 127.0.0.1:5765:5765
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/application/sublarr/config
+      target: /config
+      type: bind
+      bind:
+        create_host_path: false
+    - source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}
+      target: /media
+      type: bind
+      bind:
+        create_host_path: false
+    networks:
+    - homelab_application_default
+    mem_limit: 1g
+    memswap_limit: 1g
+    mem_swappiness: 0
+    labels:
+      com.centurylinklabs.watchtower.enable: 'false'
+    user: root
+networks:
+  homelab_application_default:
+    external: true

@@ -44,3 +44,9 @@ id_ed25519*
 *.bak-*
 *.log
 .DS_Store
+
+# Local task artifacts and private live-state exports
+outputs/
+*.private
+*.private.json
+.venv/

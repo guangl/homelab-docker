@@ -1,0 +1,192 @@
+name: homelab_maintenance
+services:
+  glance:
+    image: glanceapp/glance@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875
+    container_name: glance
+    restart: unless-stopped
+    environment:
+      GLANCES_OPT: -w
+      PERIOD: past_24_hours
+      LANGUAGE: All
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+      ADGUARD_USERNAME: ${ADGUARD_USERNAME:?请在仓库根 .env 中设置}
+      ADGUARD_PASSWORD: ${ADGUARD_PASSWORD:?请在根 .env 中设置 ADGUARD_PASSWORD}
+      WAQI_TOKEN: ${WAQI_TOKEN:?请在根 .env 中设置 WAQI_TOKEN}
+    env_file:
+    - ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/.env.glance
+    ports:
+    - 6001:8080
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/glance/config
+      target: /app/config
+      type: bind
+      bind:
+        create_host_path: false
+    - source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      type: bind
+      bind:
+        create_host_path: false
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+  glances:
+    image: nicolargo/glances@sha256:413ddc0b03422ab0bcbf30f53faf63c3ee91b354bf544cd01aa60afa73a4cda2
+    container_name: glances
+    restart: unless-stopped
+    pid: host
+    environment:
+      GLANCES_OPT: -w
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+    ports:
+    - 6002:61208
+    volumes:
+    - source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+  watchtower:
+    image: containrrr/watchtower@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_SCHEDULE: 0 0 4 * * *
+      WATCHTOWER_INCLUDE_RESTARTING: true
+      WATCHTOWER_LIFECYCLE_HOOKS: false
+      WATCHTOWER_NOTIFICATIONS: shoutrrr
+      WATCHTOWER_DEBUG: false
+      WATCHTOWER_NOTIFICATION_REPORT: true
+      WATCHTOWER_NOTIFICATION_TEMPLATE: '{{- if .Report -}}[NAS][Watchtower][容器更新] 扫描 {{len .Report.Scanned}} 个，更新
+        {{len .Report.Updated}} 个，失败 {{len .Report.Failed}} 个{{- range .Report.Updated }}{{println}}更新：{{.Name}}{{end}}{{-
+        range .Report.Failed }}{{println}}失败：{{.Name}}{{end}}{{- else -}}{{range .Entries}}{{.Message}}{{println}}{{end}}{{-
+        end -}}'
+      PUID: 1026
+      PGID: 100
+      TZ: Asia/Shanghai
+      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL:?请在根 .env 中设置 WATCHTOWER_NOTIFICATION_URL}
+      WATCHTOWER_NOTIFICATION_TITLE_TAG: NAS
+    volumes:
+    - source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      type: bind
+      bind:
+        create_host_path: false
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+  uptime-kuma:
+    image: louislam/uptime-kuma@sha256:70233f4acb5163fd2a59a49909cf01e44415cecff13dba69e3a86647a2919f83
+    container_name: uptime-kuma
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+    - 6003:3001
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/uptime-kuma/data
+      target: /app/data
+      type: bind
+      bind:
+        create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: '2'
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    networks:
+    - default
+    - application
+    - qb_control
+  apprise:
+    image: caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5
+    container_name: apprise
+    restart: unless-stopped
+    user: 1026:100
+    read_only: true
+    cap_drop:
+    - ALL
+    security_opt:
+    - no-new-privileges:true
+    ports:
+    - 127.0.0.1:8000:8000
+    environment:
+      TZ: Asia/Shanghai
+      APPRISE_AUTH_REQUIRED: 'yes'
+      APPRISE_USER: nas-admin
+      APPRISE_PASSWORD: ${APPRISE_PASSWORD:?请在根 .env 中设置 APPRISE_PASSWORD}
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/apprise/config
+      target: /config
+      type: bind
+      bind:
+        create_host_path: false
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/apprise/location-override.conf
+      target: /etc/nginx/location-override.conf
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/apprise/server-override.conf
+      target: /etc/nginx/server-override.conf
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    tmpfs:
+    - /tmp:uid=1026,gid=100,mode=1777
+    networks:
+    - default
+    - application
+  phone-notification-router:
+    image: caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5
+    container_name: phone-notification-router
+    restart: unless-stopped
+    user: 0:0
+    read_only: true
+    cap_drop:
+    - ALL
+    cap_add:
+    - NET_RAW
+    security_opt:
+    - no-new-privileges:true
+    entrypoint:
+    - python
+    - /config/route.py
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/maintenance/phone-routing
+      target: /config
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    networks:
+    - default
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: '2'
+networks:
+  application:
+    external: true
+    name: homelab_application_default
+  qb_control:
+    external: true
+    name: qb_control

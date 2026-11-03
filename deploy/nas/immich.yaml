@@ -1,0 +1,109 @@
+name: homelab_application
+services:
+  immich-server:
+    image: ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6
+    container_name: immich-server
+    restart: unless-stopped
+    user: 1026:100
+    environment:
+      TZ: Asia/Shanghai
+      DB_HOSTNAME: immich-database
+      DB_PORT: '5432'
+      DB_USERNAME: immich
+      DB_PASSWORD: ${DB_PASSWORD:?请在根 .env 中设置 DB_PASSWORD}
+      DB_DATABASE_NAME: immich
+      REDIS_HOSTNAME: immich-redis
+      IMMICH_MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL:-http://192.168.10.4:3003}
+      NODE_OPTIONS: --max-old-space-size=4096
+    ports:
+    - 6104:2283
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/application/immich/data
+      target: /data
+      type: bind
+      bind:
+        create_host_path: false
+    - source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Photos
+      target: /mnt/photos
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    - source: /etc/localtime
+      target: /etc/localtime
+      type: bind
+      read_only: true
+      bind:
+        create_host_path: false
+    depends_on:
+      immich-redis:
+        condition: service_healthy
+      immich-database:
+        condition: service_healthy
+    healthcheck:
+      disable: false
+    cpu_shares: 2048
+    deploy:
+      resources:
+        limits:
+          memory: 10240M
+  immich-redis:
+    image: valkey/valkey@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d
+    container_name: immich-redis
+    restart: unless-stopped
+    healthcheck:
+      test: redis-cli ping | grep -q PONG || exit 1
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    user: 1026:100
+    volumes: []
+  immich-database:
+    image: ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    container_name: immich-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?请在根 .env 中设置 DB_PASSWORD}
+      POSTGRES_USER: immich
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: --data-checksums
+      DB_STORAGE_TYPE: HDD
+      TZ: Asia/Shanghai
+    volumes:
+    - source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/application/immich/postgres
+      target: /var/lib/postgresql/data
+      type: bind
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/application/family-media-system-runtime/uid1026/postgresql.conf
+      target: /etc/postgresql/postgresql.conf
+      read_only: true
+      bind:
+        create_host_path: false
+    shm_size: 1g
+    command:
+    - postgres
+    - -c
+    - config_file=/etc/postgresql/postgresql.conf
+    - -c
+    - shared_buffers=1024MB
+    - -c
+    - maintenance_work_mem=256MB
+    - -c
+    - effective_cache_size=8GB
+    healthcheck:
+      disable: false
+    deploy:
+      resources:
+        limits:
+          memory: 3072M
+    user: 1026:100
+    entrypoint:
+    - /bin/bash
+    - -c
+    - . /usr/local/bin/set-env.sh; exec /usr/local/bin/docker-entrypoint.sh "$@"
+    - --
+    tmpfs:
+    - /var/run/postgresql:uid=1026,gid=100,mode=3775
