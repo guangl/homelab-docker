@@ -1,40 +1,10 @@
-- type: bookmarks
-  groups:
-    - title: WORK
-      links:
-        - title: oa
-          url: https://oa.dameng.com/
-        - title: wiki
-          url: https://wiki.dameng.com/
-        - title: prod
-          url: https://prod.dameng.com/
-    - title: ENTERTAINMENT
-      links:
-        - title: bilibili
-          url: https://bilibili.com/
-        - title: anime
-          url: https://agedm.org/
-        - title: x
-          url: https://x.com/
-    - title: KNOWLEDGE
-      links:
-        - title: wikipedia
-          url: https://en.wikipedia.org/
-        - title: github
-          url: https://github.com/
-    - title: HOMELAB
-      links:
-        - title: Immich
-          url: https://photo.guangluo.top
-        - title: Emby
-          url: https://movie.guangluo.top
-        - title: Glance
-          url: https://home.guangluo.top
-    - title: AI 助手
-      links:
-        - title: openai
-          url: https://chat.openai.com/
-        - title: deepseek
-          url: https://chat.deepseek.com/
-        - title: claude
-          url: https://claude.ai/
+- type: html
+  title: 常用书签
+  source: |
+    <div class="studio-bookmarks">
+      <h2 class="studio-bookmarks-title">常用书签</h2>
+      <div class="studio-bookmark-row"><span class="studio-bookmark-label">工作</span><div class="studio-bookmark-links"><a href="https://oa.dameng.com/" target="_blank" rel="noopener noreferrer">办公 OA</a><a href="https://wiki.dameng.com/" target="_blank" rel="noopener noreferrer">知识 Wiki</a><a href="https://prod.dameng.com/" target="_blank" rel="noopener noreferrer">产品平台</a></div></div>
+      <div class="studio-bookmark-row"><span class="studio-bookmark-label">探索</span><div class="studio-bookmark-links"><a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://zh.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a><a href="https://sspai.com/" target="_blank" rel="noopener noreferrer">少数派</a></div></div>
+      <div class="studio-bookmark-row"><span class="studio-bookmark-label">AI</span><div class="studio-bookmark-links"><a href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a><a href="https://chat.deepseek.com/" target="_blank" rel="noopener noreferrer">DeepSeek</a></div></div>
+      <div class="studio-bookmark-row"><span class="studio-bookmark-label">放松</span><div class="studio-bookmark-links"><a href="https://bilibili.com/" target="_blank" rel="noopener noreferrer">哔哩哔哩</a><a href="https://x.com/" target="_blank" rel="noopener noreferrer">X</a><a href="https://agedm.org/" target="_blank" rel="noopener noreferrer">动漫</a></div></div>
+    </div>

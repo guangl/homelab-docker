@@ -2,13 +2,10 @@
   slug: dev
   show-mobile-header: true
   columns:
+    - size: full
+      widgets:
+        - $include: widget/developer_community.yml
     - size: small
       widgets:
         - $include: widget/development_bookmark.yml
-    - size: full
-      widgets:
-        - $include: widget/dameng_cli.yml
-        - $include: widget/sqllog2db.yml
-    - size: small
-      widgets:
         - $include: widget/development_releases.yml

@@ -1,3 +1,4 @@
 - type: clock
   title: 时间
   hour-format: 24h
+  css-class: homelab-clock

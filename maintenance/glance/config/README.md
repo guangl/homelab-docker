@@ -34,4 +34,12 @@ UniFi 使用 UDM 本地 API key 与 HTTPS；因其证书为自签名，仅该组
 
 根维护编排中的 Glance 服务可单独使用：`docker compose --env-file .env -f maintenance/maintenance.yaml up -d --no-deps glance`。执行前需准备 `.env.glance` 及根 `.env`；该命令不用于重建其他现有服务。
 
-待办保存在当前浏览器。资讯与 GitHub 组件有缓存，匿名 GitHub API 可能受限；真实 API 权限应在 NAS 上检查。运行配置、数据、密钥不进 Git。
+资讯与 GitHub 组件有缓存，匿名 GitHub API 可能受限；真实 API 权限应在 NAS 上检查。运行配置、数据、密钥不进 Git。
+
+## 桌面外观（2026-11-03）
+
+首页以桌面为主：顶部横向服务入口，下方三栏分别承载时间与环境、日常书签与资讯、日历与资料库统计，服务提醒位于中栏。书签使用逐行分类的横向链接，不再使用原生多列书签布局。中文使用系统字体，浅色为暖白与墨绿、深色为石墨与浅绿，保留系统明暗切换。宽屏显示六个服务入口，较窄窗口自动减列。
+
+样式集中在 `glance.yml` 的 `document.head`；`widget/intro.yml` 和 `widget/shortcuts.yml` 为静态 HTML，不额外加载第三方字体或图标脚本。UniFi 卡片的模板请求需要在 `newRequest` 管道中设置 `withAllowInsecure true`；顶层 `allow-insecure` 不会自动传递给模板内的独立请求。设备状态、在线说明和有线/无线数量均来自控制器返回数据。
+
+首页已移除 Claude 与待办组件；开发资讯不再追踪停止维护的 dameng-cli、sqllog2db，改为技术社区内容与开发工具更新的双栏布局。

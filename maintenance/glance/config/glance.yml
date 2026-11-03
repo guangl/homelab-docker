@@ -1,56 +1,134 @@
 branding:
   hide-footer: true
-  app-name: 我的家庭主页
+  app-name: 家庭空间
 pages:
   - $include: home_page.yml
   - $include: homelab_page.yml
   - $include: development_page.yml
   - $include: photography_page.yaml
-
-document:
-  head: "<style>\n.homelab-clock [data-local-time] { flex-direction: column; align-items:\
-    \ stretch; gap: 16px; }\n.homelab-clock [data-local-time] > div:first-child {\
-    \ order: 2; display: flex; align-items: baseline; gap: 10px; }\n.homelab-clock\
-    \ [data-local-time] > div:last-child { order: 1; text-align: left; }\n.homelab-clock\
-    \ [data-local-time] [data-time] { font-size: clamp(40px, 4vw, 56px); line-height:\
-    \ 1.15; font-weight: 600; letter-spacing: -0.03em; color: var(--color-highlight);\
-    \ }\n.homelab-clock [data-weekday] { font-size: 16px; margin-top: 6px; }\n.homelab-clock\
-    \ [data-date] { font-size: 20px; }\n.homelab-services .docker-container { align-items:\
-    \ flex-start; }\n.homelab-services .docker-container > .min-width-0 > div.text-truncate\
-    \ { white-space: normal; overflow: visible; text-overflow: clip; line-height:\
-    \ 1.55; font-size: 14px; margin-top: 5px; }\n.homelab-background .docker-container-icon\
-    \ { width: 20px; height: 20px; }\n.homelab-background .size-title-dynamic { font-size:\
-    \ 14px; }\n.homelab-background .docker-container { gap: 10px; }\n.homelab-background\
-    \ .dynamic-columns { gap: 12px; }\n.theme-choices, .current-theme-preview { display:\
-    \ none !important; }\n</style>\n<script>\n(() => {\n  const preference = window.matchMedia('(prefers-color-scheme:\
-    \ dark)');\n  let running = false;\n  const desired = () => preference.matches\
-    \ ? 'default' : 'light';\n  async function syncTheme() {\n    if (running) return;\n\
-    \    running = true;\n    try {\n      while (document.documentElement.dataset.theme\
-    \ !== desired()) {\n        const key = desired();\n        const base = typeof\
-    \ pageData === 'undefined' ? '' : pageData.baseURL;\n        const response =\
-    \ await fetch(base + '/api/set-theme/' + key, {method: 'POST'});\n        if (!response.ok)\
-    \ throw new Error('Theme update failed: ' + response.status);\n        const css\
-    \ = await response.text();\n        if (key !== desired()) continue;\n       \
-    \ const style = document.getElementById('theme-style');\n        if (!style) break;\n\
-    \        style.textContent = css;\n        const scheme = response.headers.get('X-Scheme')\
-    \ || (key === 'light' ? 'light' : 'dark');\n        document.documentElement.dataset.theme\
-    \ = key;\n        document.documentElement.dataset.scheme = scheme;\n        document.documentElement.style.colorScheme\
-    \ = scheme;\n        if (typeof pageData !== 'undefined') pageData.theme = key;\n\
-    \        document.querySelector('meta[name=\"color-scheme\"]')?.setAttribute('content',\
-    \ scheme);\n        document.querySelector('meta[name=\"theme-color\"]')?.setAttribute('content',\
-    \ key === 'light' ? '#f5f5f7' : '#151519');\n      }\n    } catch (error) {\n\
-    \      console.error('Automatic theme:', error);\n    } finally {\n      running\
-    \ = false;\n    }\n  }\n  if (preference.addEventListener) preference.addEventListener('change',\
-    \ syncTheme);\n  else preference.addListener(syncTheme);\n  window.addEventListener('focus',\
-    \ syncTheme);\n  document.addEventListener('visibilitychange', () => { if (!document.hidden)\
-    \ syncTheme(); });\n  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',\
-    \ syncTheme, {once: true});\n  else syncTheme();\n})();\n\n</script>\n"
 theme:
-  disable-picker: false
+  background-color: 220 15 10
+  primary-color: 166 38 65
+  positive-color: 155 42 60
+  negative-color: 0 60 68
+  contrast-multiplier: 1.1
   presets:
     light:
       light: true
-      background-color: 240 10 97
-      primary-color: 215 65 40
-      positive-color: 135 50 30
-      negative-color: 0 65 45
+      background-color: 45 18 96
+      primary-color: 168 35 32
+      positive-color: 155 40 36
+      negative-color: 0 62 46
+      contrast-multiplier: 1.15
+document:
+  head: |
+    <style>
+    :root { --border-radius: 18px; --widget-gap: 24px; --widget-content-horizontal-padding: 22px; --widget-content-vertical-padding: 22px; }
+    :root[data-scheme="light"] { --color-widget-background: #fff; --color-widget-content-border: #e8e9e3; }
+    .header .logo { display: none; }
+    .head-widgets { display: flex; flex-direction: column; gap: 18px; }
+    .head-widgets > .widget { margin: 0; }
+    .studio-bookmarks { background: var(--color-widget-background); border: 1px solid var(--color-widget-content-border); border-radius: 18px; padding: 22px; }
+    .studio-bookmarks-title { color: var(--color-text-highlight); font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .widget-type-html:has(.studio-bookmarks) { margin-bottom: var(--widget-gap); }
+    .homelab-clock [data-local-time] > .text-right { text-align: left; }
+    .homelab-clock [data-local-time] > div:first-child { display: flex; align-items: baseline; gap: 8px; }
+    .homelab-clock [data-year] { font-size: 12px; color: var(--color-text-subdue); }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+    .content-bounds { max-width: 1512px; padding-inline: 36px; }
+    .header-container { margin-top: 24px; --header-height: 48px; }
+    .desktop-navigation { gap: 8px; }
+    .desktop-navigation .nav-item { border: 0; border-radius: 12px; padding: 0 20px; font-size: 14px; font-weight: 550; }
+    .desktop-navigation .nav-item-current { background: var(--color-widget-background); box-shadow: 0 2px 10px #00000005; }
+    .widget-header { padding-inline: 4px; margin-bottom: 12px; font-size: 13px; font-weight: 600; letter-spacing: .03em; }
+    .widget-header .uppercase { text-transform: none; }
+    .widget-content:not(.widget-content-frameless), .widget-content-frame { box-shadow: 0 4px 24px #00000003; border-color: var(--color-widget-content-border); }
+    .page-column-small { width: 268px; }
+    .size-title-dynamic { line-height: 1.6; }
+    .search { min-height: 64px; border-radius: 16px; }
+    .search-input { font-size: 15px !important; }
+    .widget-type-search > .widget-header { display: none; }
+    .studio-hero > .widget-header, .studio-launch > .widget-header { display: none; }
+    .studio-hero > .widget-content, .studio-launch > .widget-content { background: transparent; border: 0; padding: 0; box-shadow: none; }
+    .studio-intro { display: flex; justify-content: space-between; align-items: end; padding: 10px 2px 0; }
+    .studio-eyebrow { color: var(--color-primary); font-size: 11px; letter-spacing: .18em; font-weight: 650; margin-bottom: 8px; }
+    .studio-intro h1 { font-size: 30px; font-weight: 650; letter-spacing: -.04em; line-height: 1.3; color: var(--color-text-highlight); }
+    .studio-intro p { font-size: 13px; color: var(--color-text-subdue); margin-top: 8px; }
+    .studio-intro-note { font-size: 12px; color: var(--color-text-subdue); padding-bottom: 3px; }
+    .studio-shortcuts { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 14px; }
+    .studio-shortcut { display: flex; gap: 13px; align-items: center; padding: 20px; border: 1px solid var(--color-widget-content-border); background: var(--color-widget-background); border-radius: 16px; transition: transform .18s,border-color .18s; }
+    .studio-shortcut:hover { transform: translateY(-3px); border-color: var(--color-primary); }
+    .studio-shortcut:focus-visible, .studio-bookmarks a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+    .studio-shortcut svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .studio-icon { width: 42px; height: 42px; flex-shrink: 0; display: grid; place-items: center; color: var(--color-primary); background: color-mix(in srgb,var(--color-primary) 9%,transparent); border-radius: 13px; }
+    .studio-shortcut strong { display: block; font-weight: 600; font-size: 14px; color: var(--color-text-highlight); }
+    .studio-shortcut small { display: block; font-size: 11px; margin-top: 3px; color: var(--color-text-subdue); }
+    .studio-bookmark-row { display: flex; align-items: baseline; gap: 24px; padding-block: 14px; }
+    .studio-bookmark-row + .studio-bookmark-row { border-top: 1px solid var(--color-widget-content-border); }
+    .studio-bookmark-row:first-child { padding-top: 0; }
+    .studio-bookmark-row:last-child { padding-bottom: 0; }
+    .studio-bookmark-label { flex: 0 0 46px; font-size: 12px; color: var(--color-text-subdue); }
+    .studio-bookmark-links { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+    .studio-bookmarks a { color: var(--color-text-highlight); font-size: 14px; }
+    .studio-bookmarks a:hover { color: var(--color-primary); }
+    .studio-network-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .studio-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-positive); box-shadow: 0 0 0 5px color-mix(in srgb,var(--color-positive) 10%,transparent); margin: 0 5px; }
+    .studio-network-name { color: var(--color-text-highlight); font-weight: 600; font-size: 16px; }
+    .studio-network-caption { font-size: 12px; color: var(--color-text-subdue); }
+    .studio-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+    .studio-metrics strong { display: block; font-size: 27px; font-weight: 550; line-height: 1.2; color: var(--color-text-highlight); font-variant-numeric: tabular-nums; }
+    .studio-metrics span { display: block; font-size: 12px; color: var(--color-text-subdue); margin-top: 6px; }
+    .homelab-clock [data-local-time] { flex-direction: column; align-items: start; gap: 12px; }
+    .homelab-clock [data-local-time] > div:first-child { order: 2; }
+    .homelab-clock [data-time] { font-size: 44px; font-weight: 550; letter-spacing: -.04em; color: var(--color-text-highlight); }
+    .homelab-clock [data-date] { font-size: 15px; }
+    .homelab-clock [data-weekday] { font-size: 12px; }
+    .theme-choices, .current-theme-preview { display: none !important; }
+    @media(min-width:1100px) { .page-columns { align-items: start; } }
+    @media(max-width:1190px) { .studio-shortcuts { grid-template-columns: repeat(3,minmax(0,1fr)); } .page-column-small { width: 230px; } }
+    @media(min-width:1000px) and (max-width:1190px) { body .header-container { display: block; } body .mobile-navigation, body .mobile-navigation-offset, body .mobile-reachability-header { display: none; } body .page-column { display: block !important; } body .page-column-small { width: 210px; flex-shrink: 0; } body .page-column-full { flex: 1; } body .page-columns { gap: 20px; } }
+    @media(max-width:850px) { .content-bounds { padding-inline: 18px; } .studio-intro h1 { font-size: 25px; } .studio-intro-note { display: none; } .studio-shortcuts { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; } .studio-shortcut { padding: 15px; } .studio-bookmark-row { gap: 16px; } .studio-bookmark-links { gap: 8px 18px; } }
+    @media(prefers-reduced-motion:reduce) { .studio-shortcut { transition: none; } }
+    </style>
+    <script>
+    (() => {
+      const preference = window.matchMedia('(prefers-color-scheme: dark)');
+      let running = false;
+      const desired = () => preference.matches ? 'default' : 'light';
+      async function syncTheme() {
+        if (running) return;
+        running = true;
+        try {
+          while (document.documentElement.dataset.theme !== desired()) {
+            const key = desired();
+            const base = typeof pageData === 'undefined' ? '' : pageData.baseURL;
+            const response = await fetch(base + '/api/set-theme/' + key, {method: 'POST'});
+            if (!response.ok) throw new Error('Theme update failed: ' + response.status);
+            const css = await response.text();
+            if (key !== desired()) continue;
+            const style = document.getElementById('theme-style');
+            if (!style) break;
+            style.textContent = css;
+            const scheme = response.headers.get('X-Scheme') || (key === 'light' ? 'light' : 'dark');
+            document.documentElement.dataset.theme = key;
+            document.documentElement.dataset.scheme = scheme;
+            document.documentElement.style.colorScheme = scheme;
+            if (typeof pageData !== 'undefined') pageData.theme = key;
+            document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', scheme);
+            document.querySelector('meta[name="theme-color"]')?.setAttribute('content', key === 'light' ? '#f5f5f7' : '#151519');
+          }
+        } catch (error) {
+          console.error('Automatic theme:', error);
+        } finally {
+          running = false;
+        }
+      }
+      if (preference.addEventListener) preference.addEventListener('change', syncTheme);
+      else preference.addListener(syncTheme);
+      window.addEventListener('focus', syncTheme);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) syncTheme(); });
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', syncTheme, {once: true});
+      else syncTheme();
+    })();
+
+    </script>

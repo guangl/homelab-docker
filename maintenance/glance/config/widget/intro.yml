@@ -1,0 +1,4 @@
+- type: html
+  css-class: studio-hero
+  source: |
+    <div class="studio-intro"><div><div class="studio-eyebrow">HOME / EVERYDAY</div><h1>我的家庭空间</h1><p>影音、照片与日常，随手可达。</p></div><span class="studio-intro-note">NAS + Mac mini</span></div>
