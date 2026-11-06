@@ -4,11 +4,11 @@
 
 | 位置 | 内容 |
 | --- | --- |
-| [`deploy/nas/`](deploy/nas/) | 媒体、照片、看板、监控、通知、自动更新、媒体到达状态，共 7 组 |
-| [`deploy/macmini/`](deploy/macmini/) | AdGuard Home / SmartDNS、NPM、Immich 机器学习，共 3 组 |
-| [`deploy/inventory.json`](deploy/inventory.json) | 实机镜像摘要、项目名、原 Compose 路径、端口和网络 |
-| [`templates/runtime/`](templates/runtime/) | 公开支持文件、Sublarr 补丁及脱敏配置模板 |
-| [`maintenance/glance/config/`](maintenance/glance/config/) | 当前 Glance 配置及实际引用的组件 |
+| `media/`、`photos/`、`dashboard/`、`monitoring/`、`notification/`、`automation/` | 媒体、照片、看板、监控、通知、自动更新、媒体到达状态，共 7 组 |
+| [`macmini/`](macmini/) | AdGuard Home / SmartDNS、NPM、Immich 机器学习，共 3 组 |
+| [`docs/inventory.json`](docs/inventory.json) | 实机镜像摘要、项目名、原 Compose 路径、端口和网络 |
+| 各功能的 `templates/` 及 `media/workflow/` | 公开支持文件、Sublarr 补丁及脱敏配置模板 |
+| [`dashboard/glance/config/`](dashboard/glance/config/) | 当前 Glance 配置及实际引用的组件 |
 | [`scripts/`](scripts/) | 当前双主机检查与恢复入口 |
 
 NAS `192.168.10.5` 的运行根目录为 `/volume1/docker/homelab`，按 `media`、`photos`、`dashboard`、`monitoring`、`notification`、`automation` 分类；媒体根目录为 `/volume1/homes/guangluo/entertainments`。Mac mini `192.168.10.4` 使用 OrbStack，DNS 目录为 `/Users/guang/dsh-data/homelab-migrate/network`。根 `.env.example` 可调整恢复路径。
@@ -28,7 +28,7 @@ NAS `192.168.10.5` 的运行根目录为 `/volume1/docker/homelab`，按 `media`
 
 镜像固定为实机使用的 registry digest。按 [恢复说明](docs/restore.md) 准备数据、私有配置和网络后，在对应主机运行 `bash scripts/current.sh check nas|macmini`；需要部署时运行 `apply`。相同项目拆为多文件，禁止使用 `--remove-orphans`。
 
-本次仅更新本地仓库，未更改或重启现网容器。移除已停用的 NAS DNS / Sing-box 网关 / 公网 SSH 隧道编排、旧网关规则片段、失效 draw/read 反代导出和旧单机安装器。Glance 只保留当前入口递归引用的组件。历史配置可从 Git 查找。
+配置整理未更改或重启现网容器。移除已停用的 NAS DNS / Sing-box 网关 / 公网 SSH 隧道编排、旧网关规则片段、失效 draw/read 反代导出和旧单机安装器。Glance 只保留当前入口递归引用的组件。历史配置可从 Git 查找。
 
 真实 `.env`、密码、API key、通知目标、数据库、照片和媒体不入库。Git 配置不能代替数据备份。DNS 仍依赖 Mac mini 的 Surge SOCKS `192.168.10.4:6153`，Surge、UDM 与 DSM 属于外部系统。媒体到达状态容器仅显示宿主工作流生成的记录；状态容器本身不运行媒体处理任务。
 

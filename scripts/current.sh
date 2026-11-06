@@ -11,8 +11,8 @@ if [[ "$ACTION" == help || "$ACTION" == --help ]]; then
 fi
 [[ "$ACTION" == check || "$ACTION" == apply ]] || { echo '未知动作'; exit 1; }
 case "$HOST" in
- nas) FILES=(photos media notification monitoring automation media-status dashboard);;
- macmini) FILES=(network npm immich-ml);;
+ nas) FILES=(photos/photos.yaml media/media.yaml notification/notification.yaml monitoring/monitoring.yaml automation/automation.yaml media/workflow/media-arrival-status/status.yaml dashboard/dashboard.yaml);;
+ macmini) FILES=(macmini/network.yaml macmini/npm.yaml macmini/immich-ml.yaml);;
  *) echo 'host 必须是 nas 或 macmini'; exit 1;;
 esac
 [[ -f "$ROOT/.env" ]] || { echo '请复制 .env.example 为 .env 并填写参数。'; exit 1; }
@@ -27,7 +27,7 @@ elif command -v docker-compose >/dev/null && docker-compose version --short | gr
 else
  echo '需要 Docker Compose v2（docker compose 或 docker-compose）。'; exit 1
 fi
-compose() { "${COMPOSE[@]}" --env-file "$ROOT/.env" -f "$ROOT/deploy/$HOST/$1.yaml" "${@:2}"; }
+compose() { "${COMPOSE[@]}" --env-file "$ROOT/.env" -f "$ROOT/$1" "${@:2}"; }
 for file in "${FILES[@]}"; do compose "$file" config --quiet; done
 # Verify every local bind source and private template before any up/pull operation.
 # --format json is parsed using standard Python, avoiding a separate YAML dependency.
