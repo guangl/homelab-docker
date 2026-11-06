@@ -1,8 +1,8 @@
 - type: html
   title: 常用书签
   source: |
+    <div class="studio-bookmarks-title">常用书签</div>
     <div class="studio-bookmarks">
-      <h2 class="studio-bookmarks-title">常用书签</h2>
       <div class="studio-bookmark-row"><span class="studio-bookmark-label">工作</span><div class="studio-bookmark-links"><a href="https://oa.dameng.com/" target="_blank" rel="noopener noreferrer">办公 OA</a><a href="https://wiki.dameng.com/" target="_blank" rel="noopener noreferrer">知识 Wiki</a><a href="https://prod.dameng.com/" target="_blank" rel="noopener noreferrer">产品平台</a></div></div>
       <div class="studio-bookmark-row"><span class="studio-bookmark-label">探索</span><div class="studio-bookmark-links"><a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a><a href="https://zh.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a><a href="https://sspai.com/" target="_blank" rel="noopener noreferrer">少数派</a></div></div>
       <div class="studio-bookmark-row"><span class="studio-bookmark-label">AI</span><div class="studio-bookmark-links"><a href="https://chat.openai.com/" target="_blank" rel="noopener noreferrer">ChatGPT</a><a href="https://chat.deepseek.com/" target="_blank" rel="noopener noreferrer">DeepSeek</a></div></div>

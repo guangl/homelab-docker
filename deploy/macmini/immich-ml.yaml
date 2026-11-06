@@ -1,6 +1,5 @@
-name: immich-ml
 services:
-  machine-learning:
+  immich-machine-learning:
     image: ghcr.io/immich-app/immich-machine-learning@sha256:5b28c9352c8374b8a1ed96fbdd8d6755fea6e43510ec43fdf6538aa02ea40f56
     container_name: immich-machine-learning
     restart: unless-stopped
@@ -13,21 +12,17 @@ services:
       bind:
         create_host_path: false
     environment:
+      HF_HOME: /cache/hf-cache
+      DEVICE: cpu
       MACHINE_LEARNING_CACHE_FOLDER: /cache
       MACHINE_LEARNING_WORKERS: '2'
       MACHINE_LEARNING_WORKER_TIMEOUT: '600'
       MACHINE_LEARNING_MODEL_ARENA: 'false'
       TRANSFORMERS_CACHE: /cache
-      HF_HOME: /cache/hf-cache
-      DEVICE: cpu
-    mem_limit: 6g
-    memswap_limit: 6g
-    healthcheck:
-      test:
-      - CMD
-      - python3
-      - /usr/src/healthcheck.py
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 180s
+    networks:
+      immich-ml_default: null
+name: immich-ml
+networks:
+  immich-ml_default:
+    name: immich-ml_default
+    external: true

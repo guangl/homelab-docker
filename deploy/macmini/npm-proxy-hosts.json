@@ -15,8 +15,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -34,8 +33,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -53,27 +51,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
-  },
-  {
-    "domain_names": [
-      "draw.guangluo.top"
-    ],
-    "forward_host": "192.168.10.5",
-    "forward_port": 6103,
-    "forward_scheme": "http",
-    "enabled": 1,
-    "ssl_forced": 1,
-    "caching_enabled": 1,
-    "block_exploits": 1,
-    "advanced_config": "",
-    "allow_websocket_upgrade": 0,
-    "http2_support": 1,
-    "locations": [],
-    "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": false
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -91,8 +69,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -110,8 +87,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -129,8 +105,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -148,14 +123,13 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
       "adguard.guangluo.top"
     ],
-    "forward_host": "192.168.10.5",
+    "forward_host": "192.168.10.4",
     "forward_port": 6200,
     "forward_scheme": "http",
     "enabled": 1,
@@ -167,27 +141,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
-  },
-  {
-    "domain_names": [
-      "read.guangluo.top"
-    ],
-    "forward_host": "192.168.10.5",
-    "forward_port": 6106,
-    "forward_scheme": "http",
-    "enabled": 1,
-    "ssl_forced": 1,
-    "caching_enabled": 1,
-    "block_exploits": 1,
-    "advanced_config": "",
-    "allow_websocket_upgrade": 0,
-    "http2_support": 1,
-    "locations": [],
-    "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": false
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -205,8 +159,7 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   },
   {
     "domain_names": [
@@ -224,7 +177,6 @@
     "http2_support": 1,
     "locations": [],
     "hsts_enabled": 0,
-    "hsts_subdomains": 0,
-    "backend_running": true
+    "hsts_subdomains": 0
   }
 ]

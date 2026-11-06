@@ -46,7 +46,7 @@ WebUI\AuthSubnetWhitelistEnabled=true
 WebUI\HostHeaderValidation=false
 WebUI\LocalHostAuth=false
 WebUI\MaxAuthenticationFailCount=10000
-WebUI\Username=REPLACE_LOCAL_CREDENTIAL
+WebUI\Username=REPLACE_QBIT_CREDENTIAL
 
 [RSS]
 AutoDownloader\DownloadRepacks=true

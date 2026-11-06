@@ -1,0 +1,628 @@
+"""Drain worker for subtitle_automation_queue (0.71.0 Phase 3b).
+
+Called by the scheduler every `subtitle_automation_drain_interval_minutes`
+(default 2) to process pending embedded-extract work. One tick drains up to
+`max_items` rows from the queue, calling `_extract_embedded_sub` for each
+and transitioning the row to `done` or `failed` (with exponential backoff)
+depending on the outcome.
+
+Master toggle: if `Settings.subtitle_automation_enabled` is False, the
+drain is a no-op. Users opt in via the new Subtitle Automation settings
+page (Phase 7).
+
+Error taxonomy:
+    - `FileNotFoundError` → terminal failure (file gone). `next_retry_at`
+      set to None so the row sits in `failed` until the user fixes it or
+      the scanner re-enqueues after re-add.
+    - any other exception → retryable. Backoff schedule is
+      5m → 15m → 1h → 6h → 24h (capped).
+"""
+
+from __future__ import annotations
+
+import logging
+import time
+from datetime import UTC, datetime, timedelta
+
+from config import get_settings
+from db.models.core import SubtitleAutomationQueueEntry
+from db.repositories.subtitle_automation_queue import (
+    SubtitleAutomationQueueRepository,
+)
+
+# Aliased import: tests patch "services.subtitle_automation_runner._extract_embedded_sub".
+from services.embedded_extractor import extract_embedded_sub as _extract_embedded_sub
+from services.scheduler.cancellation import abort_requested
+from services.video_sync import SyncSanityThresholdError
+from translator.errors import (
+    NO_TRANSLATABLE_DIALOGUE,
+    TARGET_SUBTITLE_EXISTS,
+    NothingToTranslateError,
+    TranslationAbortedError,
+)
+
+logger = logging.getLogger(__name__)
+
+# Failures that will fail identically on every retry. Sending these round the
+# backoff ladder burns a drain slot per attempt for a result that is already
+# known — and hides the rows that genuinely deserve another try.
+#
+# `SyncUnavailableError` is deliberately NOT here, though it looks the part.
+# It means "ffsubsync is not installed", which an operator fixes — and a
+# terminal row would then never be picked up again, so every sync queued
+# before the install would stay lost after it. The backoff ladder caps at 24h,
+# which is the right cadence for waiting on a human.
+_TERMINAL_SYNC_ERRORS = (SyncSanityThresholdError,)
+
+
+class CleanupUnverifiableError(RuntimeError):
+    """A foreign-track remux failed its own verification.
+
+    Prod 2026-09-29/30: one episode failed the same duration check five times
+    in a day, a full remux each, on its way to ten. The same input fails the
+    same way; the sweep books it terminal too.
+    """
+
+
+#: A failure that survived this many attempts — five days on the 24h step —
+#: is booked terminal. Prod 2026-09-25: an .iso ffsubsync cannot read was on
+#: attempt 38, a backup name too long for the filesystem on 27.
+MAX_ATTEMPTS = 10
+
+# 5m → 15m → 1h → 6h → 24h, then capped.
+_BACKOFF_LADDER: tuple[timedelta, ...] = (
+    timedelta(minutes=5),
+    timedelta(minutes=15),
+    timedelta(hours=1),
+    timedelta(hours=6),
+    timedelta(hours=24),
+)
+
+
+def compute_backoff(*, attempt: int) -> timedelta:
+    """Exponential backoff capped at 24h.
+
+    `attempt` is 1-indexed (first retry = attempt 1 after the first
+    failure). Values above the ladder length clamp to the last step.
+    """
+    if attempt <= 0:
+        return _BACKOFF_LADDER[0]
+    idx = min(attempt - 1, len(_BACKOFF_LADDER) - 1)
+    return _BACKOFF_LADDER[idx]
+
+
+def _automation_enabled() -> bool:
+    """Read the master toggle. Indirected so tests can patch it cheaply."""
+    from config import get_settings
+
+    try:
+        return bool(get_settings().subtitle_automation_enabled)
+    except Exception:
+        # If settings can't load, act as if disabled — safe default.
+        logger.exception("failed to read subtitle_automation_enabled; treating as off")
+        return False
+
+
+def _configured_budget_s() -> int:
+    """Wall-clock seconds one drain tick may keep claiming new rows.
+
+    Indirected like `_automation_enabled` so tests can patch it, and
+    fail-safe: an unreadable setting falls back to the documented default
+    rather than to "unbounded", because unbounded is the behaviour this
+    budget exists to remove.
+    """
+    default = 1800
+    try:
+        value = int(getattr(get_settings(), "subtitle_automation_budget_s", default))
+    except Exception:
+        logger.exception("failed to read subtitle_automation_budget_s; using %ds", default)
+        return default
+    return value if value > 0 else default
+
+
+def _auto_sync_enabled() -> bool | None:
+    """Read auto-sync's own toggle. None if it could not be read.
+
+    Deliberately NOT `subtitle_automation_enabled`. Auto-sync is a separate
+    feature that happens to share this queue, and the automation toggle
+    defaults to off — gating auto-sync behind it would queue a sync after
+    every download on a default install and drain none of them.
+
+    The third answer matters since `_discard_disabled` started deleting rows.
+    While "off" only meant "do not claim", collapsing an unreadable setting
+    into False was free. It is not free any more: a transient config or
+    database error would permanently delete queued work on the strength of a
+    question nobody managed to ask. None means "do not claim, and do not
+    touch anything either".
+    """
+    from config import get_settings
+
+    try:
+        return bool(get_settings().auto_sync_after_download)
+    except Exception:
+        logger.exception("failed to read auto_sync_after_download; skipping auto-sync this tick")
+        return None
+
+
+# Task types worth discarding when their feature is switched off, which is
+# NOT the same as "every task type". `embedded_extract` and
+# `sidecar_translate` rows are re-enqueued by the wanted scanner on its next
+# pass, so leaving them costs nothing and deleting them would throw away a
+# backlog the user gets back anyway — over a toggle they may flip for an hour.
+#
+# An `auto_sync` row has no such second chance: it is written once, at the
+# moment a download lands, against a wanted item that is deleted on the next
+# line. Nothing regenerates it. So it is the one type where "waiting for a
+# worker that will never come" is a permanent state rather than a pause.
+_DISCARDABLE_TASK_TYPES = {SubtitleAutomationQueueEntry.TASK_AUTO_SYNC}
+
+
+def _eligible_task_types() -> set[str]:
+    """Which kinds of queued work this tick is allowed to run.
+
+    Two features live on one queue behind two independent toggles, so the
+    answer is a set rather than a boolean. An empty set means there is
+    nothing this tick may claim — see `drain`.
+    """
+    eligible: set[str] = set()
+    if _automation_enabled():
+        eligible.add(SubtitleAutomationQueueEntry.TASK_EMBEDDED_EXTRACT)
+        eligible.add(SubtitleAutomationQueueEntry.TASK_SIDECAR_TRANSLATE)
+    if _auto_sync_enabled():
+        eligible.add(SubtitleAutomationQueueEntry.TASK_AUTO_SYNC)
+    # Always claimable: maybe_run_foreign_track_cleanup applies the
+    # global/series policy itself and no-ops when cleanup is off.
+    eligible.add(SubtitleAutomationQueueEntry.TASK_FOREIGN_TRACK_CLEANUP)
+    return eligible
+
+
+def _standalone_task_refusal(task_type: str, claim: dict) -> str | None:
+    """Cleanup and auto-sync tasks touch the files directly: check a
+    standalone file against its folder and the media folder first.
+
+    Cleanup rows carry the series owner key in ``wanted_item_id``, auto-sync
+    rows in ``series_key``; both carry the movie owner key in
+    ``radarr_movie_id`` (negative for standalone titles). Auto-sync rows
+    queued before 1.18 have no keys and are recognised by lying under a
+    watched folder. Extraction and sidecar translation check the wanted row
+    themselves.
+    """
+    from services.standalone_library import wanted_item_path_refusal
+
+    if task_type == SubtitleAutomationQueueEntry.TASK_FOREIGN_TRACK_CLEANUP:
+        owner = _owner_ids(claim.get("wanted_item_id"), claim.get("radarr_movie_id"))
+        return wanted_item_path_refusal({"file_path": claim.get("file_path"), **owner})
+    if task_type == SubtitleAutomationQueueEntry.TASK_AUTO_SYNC:
+        # Only a standalone owner tightens the check. A Sonarr/Radarr key would
+        # exempt the row from it, so those rows keep the path-only check
+        # (media_path for files under a watched or series folder), as before.
+        owner = _owner_ids(claim.get("series_key"), claim.get("radarr_movie_id"))
+        if not any(key.startswith("standalone_") for key in owner):
+            owner = {}
+        for path in (claim.get("file_path"), claim.get("video_path")):
+            refusal = wanted_item_path_refusal({"file_path": path, **owner}) if path else None
+            if refusal:
+                return refusal
+    return None
+
+
+def _owner_ids(series_key: int | None, movie_key: int | None) -> dict:
+    """Wanted-row id fields for a queue row's owner keys (negative = standalone)."""
+    series_key, movie_key = series_key or 0, movie_key or 0
+    if series_key < 0:
+        return {"standalone_series_id": -series_key}
+    if movie_key < 0:
+        return {"standalone_movie_id": -movie_key}
+    if series_key > 0:
+        return {"sonarr_series_id": series_key}
+    if movie_key > 0:
+        return {"radarr_movie_id": movie_key}
+    return {}
+
+
+class SubtitleAutomationRunner:
+    """Pull items off the queue and drive `_extract_embedded_sub` for each."""
+
+    def __init__(
+        self,
+        repo: SubtitleAutomationQueueRepository | None = None,
+    ) -> None:
+        self._repo = repo or SubtitleAutomationQueueRepository()
+
+    def _translate_sidecar(self, wanted_item_id: int, file_path: str, target_language: str) -> None:
+        """Translate an item that has a source-language sidecar on disk.
+
+        The work `wanted_search` used to do inline while holding the global
+        search lock. It reaches the same Step-5 fallback the normal per-item
+        pipeline would eventually reach — no provider search, no retry_after
+        gate, just the local translate.
+
+        The wanted item is loaded here rather than snapshotted at enqueue
+        time: `_fallback_translate_file` dereferences it for the arr context
+        and the language profile, and a user who re-assigns a profile between
+        enqueue and drain should get the new one. Same reasoning for settings.
+        A `FileNotFoundError` for a vanished item is deliberate — `process_one`
+        already treats that as terminal rather than cycling a dead row through
+        the backoff ladder forever.
+        """
+        from config import get_settings
+        from db.wanted import get_wanted_item
+        from wanted_search.process import _fallback_translate_file
+
+        item = get_wanted_item(wanted_item_id)
+        if item is None:
+            raise FileNotFoundError(
+                f"wanted item {wanted_item_id} no longer exists; dropping its translation"
+            )
+        from services.standalone_library import wanted_item_path_refusal
+
+        refusal = wanted_item_path_refusal(item)
+        if refusal:
+            raise ValueError(refusal)
+        result = _fallback_translate_file(
+            {
+                "item": item,
+                "item_id": wanted_item_id,
+                "item_lang": item.get("target_language") or target_language,
+                "settings": get_settings(),
+                "auto_translate": True,
+                "file_path": file_path,
+            }
+        )
+        # `_fallback_translate_file` reports failure by returning, not by
+        # raising — it has to, because the search's step chain consumes the
+        # dict it returns. Ignoring that return value made every failure look
+        # like a success to `process_one`, which then called `mark_done`.
+        #
+        # The cost was not the wrong number in the status panel: a row marked
+        # done is never claimed again, so the backoff ladder never engaged and
+        # the episode stayed without its subtitle for good. Prod 2026-08-16
+        # recorded 176 failed translation jobs against 160 successful ones in
+        # 24h, and not one `failed` row in this queue.
+        status = (result or {}).get("status")
+        if (result or {}).get("reason") == TARGET_SUBTITLE_EXISTS:
+            # Nothing to do, not a failure: a real subtitle arrived meanwhile.
+            logger.info(
+                "subtitle_automation: sidecar translate for wanted_item=%s not needed: %s",
+                wanted_item_id,
+                (result or {}).get("error"),
+            )
+            return
+        if status != "found":
+            error = (result or {}).get("error") or (
+                f"translation did not produce a subtitle (status={status!r})"
+            )
+            # A source that holds nothing to translate reads the same on every
+            # attempt, so it must not join the backoff ladder. The flows mark
+            # that case rather than leaving it to be recognised by its wording.
+            if (result or {}).get("reason") == NO_TRANSLATABLE_DIALOGUE:
+                raise NothingToTranslateError(error)
+            raise RuntimeError(error)
+
+    def _foreign_track_cleanup(
+        self,
+        series_id: int,
+        video_path: str,
+        language: str,
+        radarr_movie_id: int | None = None,
+    ) -> None:
+        """Strip foreign subtitle tracks from a video a provider download landed beside.
+
+        The keep-set must cover ALL of the profile's target languages, not just
+        the language of the sub that happened to land first — a de+ja profile
+        lost its embedded Japanese track the moment the German sidecar arrived.
+
+        ``radarr_movie_id`` (fix round 1): the claimed row's movie id, when
+        this cleanup came from a movie download — without it in ``item``,
+        ``maybe_run_foreign_track_cleanup`` could never resolve a per-movie
+        track-policy override (``resolve_policy(movie_id=...)`` was never
+        reached for movies before this parameter existed).
+        """
+        import os
+
+        from services.foreign_track_cleanup import (
+            CLEANUP_FAILED,
+            CLEANUP_STRIPPED,
+            CLEANUP_UNVERIFIABLE,
+            cleanup_keep_languages,
+            maybe_run_foreign_track_cleanup,
+        )
+
+        if not os.path.isfile(video_path):
+            raise FileNotFoundError(f"video gone before its foreign-track cleanup: {video_path}")
+        item = {
+            "sonarr_series_id": series_id or None,
+            "radarr_movie_id": radarr_movie_id,
+            "target_language": language,
+        }
+        # Shared with the live preview, so both reach the same verdict.
+        keep = cleanup_keep_languages(item)
+        if keep is None:
+            # A narrower fallback keep-set would strip the profile's other
+            # target languages — retry instead.
+            raise RuntimeError(f"language profile unresolvable for {video_path}")
+
+        outcome = maybe_run_foreign_track_cleanup(item, video_path, target_languages=keep)
+        if outcome == CLEANUP_UNVERIFIABLE:
+            raise CleanupUnverifiableError(
+                f"foreign-track remux failed verification for {video_path}; the original is "
+                "untouched and it will not be retried — see the log for the check that failed"
+            )
+        if outcome == CLEANUP_FAILED:
+            # Busy media gate, remux error, mount trouble: the reason is in the
+            # log above. Raising puts the row on the backoff ladder instead of
+            # booking a cleanup that never happened as done.
+            raise RuntimeError(f"foreign-track cleanup failed for {video_path}")
+        if outcome == CLEANUP_STRIPPED:
+            from services.media_server_notify import notify_media_servers
+
+            notify_media_servers(video_path, "episode" if series_id else "")
+
+    def _auto_sync(self, subtitle_path: str, video_path: str | None) -> None:
+        """Time a downloaded sidecar against its video.
+
+        The work `wanted_search` used to do inline, in the middle of a
+        per-item chain. `sync_with_ffsubsync` caps a single run at 600s,
+        which alone is two thirds of that job's cancel grace — the reason
+        three consecutive prod sweeps were recorded `timeout_abandoned`.
+
+        Both paths come off the row rather than from the wanted item: the
+        item is usually deleted the moment its subtitle lands.
+        """
+        from services.video_sync import (
+            SubtitleLengthMismatchError,
+            SyncShiftRejectedError,
+            sync_with_ffsubsync,
+        )
+
+        if not video_path:
+            # Only reachable for a row written before `video_path` existed.
+            # Guessing the video from the sidecar name is how sync ends up
+            # timing a subtitle against the wrong file.
+            raise FileNotFoundError(
+                f"auto_sync row for {subtitle_path} has no video_path; cannot sync"
+            )
+        logger.info("auto-sync: starting ffsubsync for %s against %s", subtitle_path, video_path)
+        try:
+            sync_with_ffsubsync(subtitle_path, video_path)
+        except (SyncShiftRejectedError, SubtitleLengthMismatchError) as exc:
+            # A shift past the sanity threshold, or a subtitle running past
+            # the end of the video, means another episode or cut (prod
+            # 2026-10, Clevatess). Booking the row terminal alone left that
+            # file in place for good: a target ASS on disk keeps the episode
+            # out of the wanted queue. Quarantine it: blacklist, move the file
+            # to the subtitle trash, requeue.
+            from services.suspect_sidecars import quarantine_wrong_sidecar
+
+            quarantine_wrong_sidecar(subtitle_path, video_path, str(exc))
+            raise
+        logger.info("auto-sync: complete for %s", subtitle_path)
+
+    def process_one(self, *, task_types: set[str] | None = None) -> bool:
+        """Claim and process a single queue entry.
+
+        Returns True if a row was processed (success or failure), False if
+        the queue is empty / everyone is running / all failures still in
+        backoff.
+        """
+        claim = self._repo.claim_next(now=datetime.now(UTC), task_types=task_types)
+        if claim is None:
+            return False
+        entry_id = claim["id"]
+        wanted_item_id = claim["wanted_item_id"]
+        file_path = claim["file_path"]
+        task_type = claim.get("task_type") or "embedded_extract"
+        # attempt_count BEFORE this attempt; mark_failed will increment it.
+        prior_attempt = claim.get("attempt_count") or 0
+        refusal = _standalone_task_refusal(task_type, claim)
+        if refusal:
+            # Rechecked at execution: the folder may have changed since the
+            # task was queued. Closed out, the row is kept for the record.
+            logger.warning("subtitle_automation: %s for %s - not run", refusal, file_path)
+            self._repo.mark_failed(entry_id, error=refusal, next_retry_at=None)
+            return True
+        try:
+            if task_type == SubtitleAutomationQueueEntry.TASK_SIDECAR_TRANSLATE:
+                self._translate_sidecar(wanted_item_id, file_path, claim["target_language"])
+            elif task_type == SubtitleAutomationQueueEntry.TASK_FOREIGN_TRACK_CLEANUP:
+                self._foreign_track_cleanup(
+                    wanted_item_id,
+                    file_path,
+                    claim["target_language"],
+                    claim.get("radarr_movie_id"),
+                )
+            elif task_type == SubtitleAutomationQueueEntry.TASK_AUTO_SYNC:
+                self._auto_sync(file_path, claim.get("video_path"))
+            else:
+                extracted = _extract_embedded_sub(wanted_item_id, file_path, auto_translate=False)
+                from config_language_data import normalize_language_code
+                source_lang = normalize_language_code(extracted.get('language') or '')
+                target_lang = normalize_language_code(claim['target_language'])
+                if (getattr(get_settings(), 'wanted_auto_translate', False)
+                        and source_lang and source_lang != target_lang):
+                    self._translate_sidecar(wanted_item_id, file_path, claim['target_language'])
+        except TranslationAbortedError as exc:
+            # The scheduler ran out of time; the item did nothing wrong. Put
+            # the row back as pending without spending an attempt — the
+            # finished batches are already in the translation memory, so the
+            # next drain resumes rather than starting the file again.
+            logger.info(
+                "subtitle_automation: stopped mid-translation for wanted_item=%s — requeued (%s)",
+                wanted_item_id,
+                exc,
+            )
+            self._repo.release_for_retry(entry_id, reason=str(exc))
+            return True
+        except NothingToTranslateError as exc:
+            # Closed out, never retried: the source was read without trouble
+            # and simply carries no dialogue — a signs-and-songs track reads
+            # that way every time. Prod 2026-09-20 had 64 entries spending up
+            # to ten attempts each on exactly this.
+            logger.info(
+                "subtitle_automation: nothing to translate for wanted_item=%s: %s",
+                wanted_item_id,
+                exc,
+            )
+            self._repo.mark_failed(entry_id, error=str(exc), next_retry_at=None)
+            return True
+        except _TERMINAL_SYNC_ERRORS as exc:
+            # A rejected shift is the same shift next time — the sanity gate
+            # compares the measured offset against a configured threshold, and
+            # neither changes between attempts.
+            logger.warning(
+                "subtitle_automation: auto-sync will not be retried for wanted_item=%s: %s",
+                wanted_item_id,
+                exc,
+            )
+            self._repo.mark_failed(entry_id, error=str(exc), next_retry_at=None)
+            return True
+        except CleanupUnverifiableError as exc:
+            logger.warning(
+                "subtitle_automation: foreign-track cleanup will not be retried for "
+                "wanted_item=%s: %s",
+                wanted_item_id,
+                exc,
+            )
+            self._repo.mark_failed(entry_id, error=str(exc), next_retry_at=None)
+            return True
+        except FileNotFoundError as exc:
+            logger.warning(
+                "subtitle_automation: media file gone for wanted_item=%s (%s); "
+                "marking terminal failure",
+                wanted_item_id,
+                file_path,
+            )
+            self._repo.mark_failed(entry_id, error=str(exc), next_retry_at=None)
+            return True
+        except Exception as exc:
+            if prior_attempt + 1 >= MAX_ATTEMPTS:
+                logger.warning(
+                    "subtitle_automation: giving up on wanted_item=%s after %d attempts: %s",
+                    wanted_item_id,
+                    prior_attempt + 1,
+                    exc,
+                )
+                self._repo.mark_failed(entry_id, error=str(exc), next_retry_at=None)
+                return True
+            delay = compute_backoff(attempt=prior_attempt + 1)
+            retry_at = datetime.now(UTC) + delay
+            logger.warning(
+                "subtitle_automation: extract failed for wanted_item=%s: %s — retry in %s",
+                wanted_item_id,
+                exc,
+                delay,
+            )
+            self._repo.mark_failed(entry_id, error=str(exc), next_retry_at=retry_at)
+            return True
+        self._repo.mark_done(entry_id)
+        return True
+
+    def _discard_disabled(self) -> None:
+        """Drop queued work whose feature is confirmed off.
+
+        Runs before the drain rather than on the toggle itself: a setting can
+        be changed by an API call, an env var or a direct database edit, and
+        only the drain sees all three.
+
+        `is False` rather than `not ...` on purpose — an unreadable setting
+        answers None, and deleting a user's queue because a config read failed
+        would be a far worse bug than the one this method exists to fix.
+        """
+        if _auto_sync_enabled() is not False:
+            return
+        disabled = set(_DISCARDABLE_TASK_TYPES)
+        try:
+            removed = self._repo.discard_waiting(disabled)
+        except Exception:
+            # Housekeeping must never cost the tick its actual work.
+            logger.exception("subtitle_automation: could not discard rows for disabled features")
+            return
+        if removed:
+            logger.info(
+                "subtitle_automation: discarded %d queued item(s) for switched-off features (%s)",
+                removed,
+                ", ".join(sorted(disabled)),
+            )
+
+    def drain(self, *, max_items: int = 50, budget_s: int | None = None) -> int:
+        """Drain up to `max_items` entries. Returns the number processed.
+
+        Stops early if the queue is empty. Claims only the task types whose
+        feature is currently switched on — this queue serves two features
+        with two independent toggles, so "off" is per task type, not for the
+        whole drain.
+
+        Auto-sync rows belonging to a switched-off feature are dropped rather
+        than left waiting: nothing will ever claim them and nothing will ever
+        regenerate them, so leaving them makes the status counts promise work
+        that is not coming. The other task types are left alone — the scanner
+        re-enqueues those, so waiting really is only waiting.
+
+        `budget_s` bounds the tick by wall clock, defaulting to
+        `Settings.subtitle_automation_budget_s`. Two bounds were not enough:
+        `max_items` counts rows whose cost ranges from a few seconds to the
+        ~870s of one sidecar translation, and the JobSpec's `timeout_s` does
+        not cancel — it stops *waiting* and sets the abort event. A tick doing
+        exactly the work asked of it therefore overran the wait and was
+        recorded as `timeout`, with its deliberate wind-down surfacing as an
+        ERROR (prod 2026-09-06: 12 of 70 ticks in 24h, mean 2549s against the
+        2400s timeout). The JobSpec comment records the same complaint for the
+        old 600s bound; raising the ceiling only moves it.
+
+        The check sits *before* the claim, never after. Claiming a row and
+        then abandoning it is the very thing the abort check between items
+        exists to avoid, and it would leave the row `running` with nobody on
+        it. The item already in flight when the budget runs out still finishes
+        — that is what the headroom under `timeout_s` is for.
+        """
+        task_types = _eligible_task_types()
+        self._discard_disabled()
+        if not task_types:
+            return 0
+        if max_items <= 0:
+            return 0
+        if budget_s is None:
+            budget_s = _configured_budget_s()
+        deadline = time.monotonic() + budget_s
+        processed = 0
+        while processed < max_items:
+            # One queue item is the unit of work: claiming the row starts a
+            # ffprobe/extract/ffsubsync operation that cannot be interrupted,
+            # so a stop takes effect before the next item is claimed.
+            if abort_requested():
+                logger.info(
+                    "subtitle_automation_tick: stopping as asked after %d item(s)",
+                    processed,
+                )
+                return processed
+            if time.monotonic() >= deadline:
+                logger.info(
+                    "subtitle_automation_tick: %ds budget spent after %d item(s) — "
+                    "leaving the rest of the queue for the next tick",
+                    budget_s,
+                    processed,
+                )
+                return processed
+            if not self.process_one(task_types=task_types):
+                break
+            processed += 1
+        return processed
+
+
+def subtitle_automation_tick() -> None:
+    """Scheduler-entry-point for the drain worker.
+
+    Module-level so APScheduler's SQLAlchemyJobStore can pickle the
+    textual reference. Called every `subtitle_automation_drain_interval_minutes`
+    per the JobSpec in `_build_default_jobs`.
+    """
+    runner = SubtitleAutomationRunner()
+    # Cap per tick so a very large backlog doesn't monopolize the worker. The
+    # cap bounds how many items are *claimed*, not how long the tick takes:
+    # the rows here range from a few-second extraction to a ~16-minute
+    # translation to a timing correction capped at 600s. What actually bounds
+    # the tick is the JobSpec's timeout, and what bounds its wind-down is the
+    # abort check between items in `drain`.
+    processed = runner.drain(max_items=50)
+    if processed:
+        logger.info("subtitle_automation_tick: processed %d items", processed)

@@ -18,11 +18,10 @@ for service in config['services'].values():
                 errors.append(f'配置仍有占位符：{source}')
 # Services that mount config directories also require their main config files.
 required = {
-    '/etc/sing-box': 'config.json',
     '/etc/smartdns': 'smartdns.conf',
     '/opt/adguardhome/conf': 'AdGuardHome.yaml',
-    '/run/ssh': 'id_ed25519',
     '/app/config': 'glance.yml',
+    '/app': 'server.py',
 }
 for service in config['services'].values():
     for volume in service.get('volumes', []):
@@ -41,9 +40,5 @@ for service in config['services'].values():
                 errors.append(f'缺少配置文件：{source}')
             elif 'REPLACE_' in source.read_text(errors='replace'):
                 errors.append(f'配置仍有占位符：{source}')
-        if volume['target'] == '/run/ssh':
-            known = pathlib.Path(volume['source']) / 'known_hosts'
-            if not known.is_file():
-                errors.append(f'缺少已验证的 SSH 主机公钥文件：{known}')
 if errors:
     sys.exit('\n'.join(sorted(set(errors))))

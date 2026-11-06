@@ -21,7 +21,7 @@
       icon: si:qbittorrent
     - title: 服务监控
       url: https://monitor.guangluo.top
-      check-url: http://192.168.10.5:6003
+      check-url: http://192.168.10.5:6003/dashboard
       icon: si:uptimekuma
     - title: NAS 资源
       url: https://top.guangluo.top
@@ -29,7 +29,7 @@
       icon: mdi:server
     - title: AdGuard Home
       url: https://adguard.guangluo.top
-      check-url: http://192.168.10.5:6200
+      check-url: http://192.168.10.4:6200
       icon: si:adguard
     - title: Nginx Proxy Manager
       url: https://nginx.guangluo.top
@@ -39,3 +39,7 @@
       url: http://192.168.10.4:3003
       check-url: http://192.168.10.4:3003/ping
       icon: si:immich
+    - title: 元数据翻译
+      url: https://home.guangluo.top/homelab
+      check-url: http://media-arrival-status:7099/healthz
+      icon: mdi:translate

@@ -1,5 +1,5 @@
 ca-file /etc/smartdns/ca-certificates.crt
-# Primary resolver behind NAS AdGuard; no external DNS fallback through ISP.
+# Primary resolver behind Mac mini AdGuard; no external DNS fallback through ISP.
 server-name homelab-smartdns
 bind 127.0.0.1:6053
 bind-tcp 127.0.0.1:6053
@@ -53,3 +53,9 @@ address /read.guangluo.top/192.168.10.4
 address /read.guangluo.top/#6
 address /dsm.guangluo.top/192.168.10.5
 address /dsm.guangluo.top/#6
+
+# bootstrap-direct BEGIN: resolve proxy entrances without depending on the proxy
+domain-rules /REPLACE_BOOTSTRAP_DOMAIN_1/ -nameserver domestic -no-cache -no-serve-expired -rr-ttl-max 60 -speed-check-mode none
+domain-rules /REPLACE_BOOTSTRAP_DOMAIN_2/ -nameserver domestic -no-cache -no-serve-expired -rr-ttl-max 60 -speed-check-mode none
+domain-rules /REPLACE_BOOTSTRAP_DOMAIN_3/ -nameserver domestic -no-cache -no-serve-expired -rr-ttl-max 60 -speed-check-mode none
+# bootstrap-direct END

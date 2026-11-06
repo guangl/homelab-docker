@@ -1,0 +1,71 @@
+name: homelab_network
+services:
+  adguardhome:
+    deploy:
+      resources:
+        limits:
+          memory: '536870912'
+    restart: unless-stopped
+    container_name: adguardhome
+    command:
+    - --no-check-update
+    - -c
+    - /opt/adguardhome/conf/AdGuardHome.yaml
+    - -w
+    - /opt/adguardhome/work
+    environment:
+      TZ: Asia/Shanghai
+    image: adguard/adguardhome@sha256:e2e1b48c832f7705be915873f95de0d5114de573736441d7f2923a8a6293027c
+    network_mode: host
+    volumes:
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/adguardhome/work
+      target: /opt/adguardhome/work
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/adguardhome/conf
+      target: /opt/adguardhome/conf
+      bind:
+        create_host_path: false
+    depends_on:
+      smartdns:
+        condition: service_healthy
+        required: true
+  smartdns:
+    restart: unless-stopped
+    container_name: smartdns
+    environment:
+      TZ: CST-8
+    image: pymumu/smartdns@sha256:8db964569ae6ffc7e9f06f0a516d496c49b6dfc9b1430a2c2e64e7a66c18f1b9
+    mem_limit: '134217728'
+    network_mode: host
+    volumes:
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/smartdns/conf
+      target: /etc/smartdns
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/smartdns/conf/ca-certificates.crt
+      target: /etc/ssl/certs/ca-certificates.crt
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/smartdns/data
+      target: /var/lib/smartdns
+      bind:
+        create_host_path: false
+    healthcheck:
+      test:
+      - CMD
+      - nslookup
+      - -type=A
+      - home.guangluo.top
+      - 127.0.0.1:6053
+      timeout: 5s
+      interval: 30s
+      retries: 3
+      start_period: 5s

@@ -1,11 +1,8 @@
-name: homelab_network
 services:
   npm:
     image: jc21/nginx-proxy-manager@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594
     container_name: nginx-proxy-manager
     restart: unless-stopped
-    dns:
-    - 192.168.5.1
     ports:
     - 80:80
     - 443:443
@@ -21,3 +18,17 @@ services:
       target: /etc/letsencrypt
       bind:
         create_host_path: false
+    environment:
+      DISABLE_IPV6: 'true'
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: '3'
+    networks:
+      npm_default: null
+name: npm
+networks:
+  npm_default:
+    name: npm_default
+    external: true

@@ -1,0 +1,31 @@
+name: homelab_media_status
+services:
+  media-arrival-status:
+    container_name: media-arrival-status
+    image: python@sha256:09d17d5e4c16d0a7a1eea690bcb7c6ab8616b211f8421e429e97c1bef5bd0ed2
+    command:
+    - python3
+    - /app/server.py
+    environment:
+      EMBY_TRANSLATION_DAILY_LIMIT: '100'
+      TZ: Asia/Shanghai
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/media-arrival-state
+      target: /state
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/media-arrival-status
+      target: /app
+      read_only: true
+      bind:
+        create_host_path: false
+    networks:
+      homelab_maintenance_default: null
+    restart: unless-stopped
+networks:
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true

@@ -1,7 +1,7 @@
 - type: dns-stats
   title: DNS 查询与拦截
   service: adguard
-  url: http://192.168.10.5:6200
+  url: http://192.168.10.4:6200
   username: ${ADGUARD_USERNAME}
   password: ${ADGUARD_PASSWORD}
   hour-format: 24h

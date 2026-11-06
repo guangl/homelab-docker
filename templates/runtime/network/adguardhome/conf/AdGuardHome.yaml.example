@@ -12,7 +12,7 @@ http:
   address: 0.0.0.0:6200
   session_ttl: 30d
 users:
-- name: admin
+- name: guangluo
   password: REPLACE_BCRYPT_PASSWORD_HASH
 auth_attempts: 5
 block_auth_min: 15
@@ -35,7 +35,9 @@ dns:
   bootstrap_dns:
   - 223.5.5.5
   - 119.29.29.29
-  fallback_dns: []
+  fallback_dns:
+  - https://doh.pub/dns-query
+  - https://dns.cloudflare-dns.com/dns-query
   upstream_mode: load_balance
   fastest_timeout: 1s
   allowed_clients: []
@@ -47,9 +49,9 @@ dns:
   trusted_proxies:
   - 127.0.0.0/8
   - ::1/128
-  cache_enabled: false
-  cache_size: 0
-  cache_ttl_min: 0
+  cache_enabled: true
+  cache_size: 4194304
+  cache_ttl_min: 60
   cache_ttl_max: 0
   cache_optimistic: false
   cache_optimistic_answer_ttl: 30s
@@ -99,7 +101,7 @@ querylog:
   size_memory: 1000
   enabled: true
   ignored_enabled: false
-  file_enabled: false
+  file_enabled: true
 statistics:
   dir_path: ''
   ignored: []

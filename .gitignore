@@ -1,6 +1,17 @@
 # 本地环境变量
 .env
 
+# 宿主运行目录；公开支持文件放在 templates/runtime/，不匹配此处。
+/media/
+/photos/
+/dashboard/
+/monitoring/
+/notification/
+/automation/
+/network/adguardhome/
+/network/smartdns/
+
+# 保留历史运行目录的忽略规则，防止旧数据误提交。
 # 运行时数据：由容器生成，不纳入版本管理
 application/jellyfin/config/
 application/jellyfin/cache/
@@ -49,4 +60,6 @@ id_ed25519*
 outputs/
 *.private
 *.private.json
+*.private.yaml
+*.private.yml
 .venv/

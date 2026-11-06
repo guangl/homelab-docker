@@ -40,49 +40,38 @@
       url: https://monitor.guangluo.top
       icon: si:uptimekuma
       hide: false
-    adguardhome:
-      name: AdGuard Home
-      description: DNS 查询与过滤
-      url: https://adguard.guangluo.top
-      icon: si:adguard
-      hide: false
     glance:
       icon: mdi:view-dashboard-outline
       name: Glance
+      description: 家庭服务与影音入口总览
       hide: false
     watchtower:
       icon: mdi:package-up
       name: Watchtower
-      hide: false
-    smartdns:
-      icon: mdi:dns
-      name: SmartDNS
-      hide: false
-    network-gateway:
-      icon: mdi:router-network
-      name: Sing-box 网关
-      hide: false
-    public-sites-tunnel:
-      icon: mdi:swap-horizontal-circle-outline
-      name: AutoSSH 公网隧道
+      description: 自动拉取新镜像并更新容器
       hide: false
     apprise:
       icon: mdi:bell-ring-outline
       name: Apprise 通知
+      description: 多种渠道的通知推送服务
       hide: false
     phone-notification-router:
       icon: mdi:cellphone-message
       name: 手机通知路由
+      description: 把系统与容器告警转发到手机
       hide: false
     media-sublarr:
       icon: mdi:subtitles-outline
       name: Sublarr 字幕
+      description: 剧集字幕自动搜索与下载
       hide: false
     immich-database:
       icon: si:postgresql
       name: Immich PostgreSQL
+      description: Immich 照片库的 PostgreSQL 数据库
       hide: false
     immich-redis:
       icon: mdi:memory
       name: Immich Valkey
+      description: Immich 的缓存与任务队列
       hide: false

@@ -28,8 +28,8 @@ document:
     .header .logo { display: none; }
     .head-widgets { display: flex; flex-direction: column; gap: 18px; }
     .head-widgets > .widget { margin: 0; }
-    .studio-bookmarks { background: var(--color-widget-background); border: 1px solid var(--color-widget-content-border); border-radius: 18px; padding: 22px; }
-    .studio-bookmarks-title { color: var(--color-text-highlight); font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+    .studio-bookmarks { background: var(--color-widget-background); border: 1px solid var(--color-widget-content-border); border-radius: 18px; padding: 20px 22px; }
+    .studio-bookmarks-title { color: var(--color-text-base); font-size: 13px; font-weight: 600; letter-spacing: .03em; margin: 0 0 12px 4px; }
     .widget-type-html:has(.studio-bookmarks) { margin-bottom: var(--widget-gap); }
     .homelab-clock [data-local-time] > .text-right { text-align: left; }
     .homelab-clock [data-local-time] > div:first-child { display: flex; align-items: baseline; gap: 8px; }
@@ -68,7 +68,12 @@ document:
     .studio-bookmark-row:first-child { padding-top: 0; }
     .studio-bookmark-row:last-child { padding-bottom: 0; }
     .studio-bookmark-label { flex: 0 0 46px; font-size: 12px; color: var(--color-text-subdue); }
-    .studio-bookmark-links { display: flex; flex-wrap: wrap; gap: 10px 24px; }
+    .studio-bookmark-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .studio-bookmark-label { flex: 0 0 40px; font-weight: 600; color: var(--color-text-highlight); }
+    .studio-bookmark-links a { display: inline-flex; align-items: center; height: 26px; padding: 0 9px; border-radius: 999px; background: color-mix(in srgb, var(--color-primary) 8%, transparent); color: var(--color-text-highlight); font-size: 13px; text-decoration: none; }
+    .studio-bookmark-links a:hover { background: color-mix(in srgb, var(--color-primary) 16%, transparent); }
+    .widget-type-monitor .widget-content { padding-block: 18px; }
+    .widget-type-monitor > .widget-header { margin-top: 26px; }
     .studio-bookmarks a { color: var(--color-text-highlight); font-size: 14px; }
     .studio-bookmarks a:hover { color: var(--color-primary); }
     .studio-network-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }

@@ -14,4 +14,5 @@
     - size: small
       widgets:
         - $include: widget/homelab_releases.yml
+        - $include: widget/media_pipeline.yml
         - $include: widget/management_bookmark.yml

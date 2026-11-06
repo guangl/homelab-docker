@@ -26,7 +26,7 @@
   "rename": true,
   "rss": true,
   "rssTimeout": 20,
-  "fileExist": false,
+  "fileExist": true,
   "awaitStalledUP": true,
   "delete": false,
   "deleteStandbyRSSOnly": false,
@@ -87,7 +87,7 @@
   "trackersUpdateUrls": "https://cf.trackerslist.com/best.txt",
   "notificationTemplate": "[NAS][ani-rss][${action}] ${title}  S${seasonFormat}E${episodeFormat}",
   "autoUpdate": true,
-  "version": "3.2.54",
+  "version": "3.2.55",
   "bgmImageSize": "medium",
   "customCss": "",
   "customJs": "",
@@ -180,8 +180,8 @@
   "limitLoginAttempts": true,
   "gitInfo": {
     "branch": "main",
-    "shortCommitId": "ab8887c",
-    "commitId": "ab8887c4a43b42fca2a86a9a67dd2d663de7f3cb"
+    "shortCommitId": "513eba3",
+    "commitId": "513eba32246db70898712a458aa09e97b70d9193"
   },
   "reverseProxyTrustIpListEnabled": true,
   "reverseProxyTrustIpList": [
