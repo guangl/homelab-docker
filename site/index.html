@@ -6,10 +6,10 @@
 <title>Guang’s Homelab · 家庭实验室</title>
 <style>
 :root{color-scheme:dark;--bg:#10171b;--panel:#172228;--line:#33464c;--ink:#f0f5f2;--sub:#b6c7c9;--accent:#b9f78a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,sans-serif}a{color:var(--accent)}a:focus-visible{outline:2px solid var(--accent);outline-offset:5px}.wrap{width:min(1080px,92%);margin:auto}header{border-bottom:1px solid var(--line)}nav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 0}nav div{display:flex;gap:18px;flex-wrap:wrap}nav a{text-decoration:none}.mono,.tag{font:13px/1.5 ui-monospace,monospace;letter-spacing:.08em;color:var(--accent)}.hero{padding:clamp(42px,8vw,100px) 0 56px;background:radial-gradient(ellipse at 82% 20%,#243d32,transparent 62%)}h1{font-size:clamp(40px,8vw,94px);line-height:1.06;letter-spacing:-.06em;margin:18px 0}p{color:var(--sub)}.hero p{max-width:46ch;font-size:1.12rem}.button{display:inline-block;padding:9px 16px;border:1px solid var(--accent);border-radius:6px;text-decoration:none}.stats,.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stats{margin-top:36px}.card,.stats div,.flow{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:18px}.stats strong{display:block;font-size:2rem;line-height:1.2}section{padding:30px 0}h2{font-size:clamp(25px,4vw,38px);margin:0 0 18px}h3{margin:5px 0}.card p{margin:6px 0 0}.flow dl{display:grid;grid-template-columns:minmax(105px,1fr) 3fr;gap:12px;margin:0}.flow dt{color:var(--accent)}dd{margin:0;color:var(--sub)}footer{margin-top:35px;padding:22px 0;border-top:1px solid var(--line);color:var(--sub)}@media(max-width:650px){.grid{grid-template-columns:1fr}.stats div{padding:12px}.flow dl{grid-template-columns:1fr;gap:4px}.flow dd{margin-bottom:12px}}
-</style>
+.container{min-width:0}.container dl{margin:12px 0}.container dt{color:var(--sub);font-size:.85rem}.container dd{overflow-wrap:anywhere;margin-bottom:8px}.filters{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:16px 0}input,select{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:6px}details{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:12px 16px;scroll-margin-top:12px}summary{cursor:pointer;overflow-wrap:anywhere}pre{overflow:auto;max-height:34rem;background:var(--bg);padding:14px;border-radius:5px}li{margin-bottom:8px}</style>
 </head>
 <body>
-<header><nav class="wrap" aria-label="主导航"><a class="mono" href="#top">GL / HOMELAB</a><div><a href="#architecture">架构</a><a href="#services">服务</a><a href="https://github.com/guangl/homelab-docker">GitHub ↗</a></div></nav></header>
+<header><nav class="wrap" aria-label="主导航"><a class="mono" href="#top">GL / HOMELAB</a><div><a href="#architecture">架构</a><a href="#services">服务</a><a href="#containers">容器</a><a href="#configs">配置</a><a href="https://github.com/guangl/homelab-docker">GitHub ↗</a></div></nav></header>
 <main id="top">
 <div class="hero"><div class="wrap">
 <div class="mono">FIELD NOTES / 2026.11.06</div>
@@ -36,6 +36,767 @@
 <section class="wrap"><div class="tag">03 / OPERATIONS</div><h2>网络与维护</h2>
 <div class="flow"><dl><dt>DNS</dt><dd>AdGuard Home 接收查询，SmartDNS 按域名选择上游。</dd><dt>反向代理</dt><dd>Nginx Proxy Manager 转发应用请求。</dd><dt>恢复</dt><dd>Docker Compose 记录部署结构，镜像固定到摘要。恢复时分别准备配置与应用数据。</dd></dl></div>
 </section>
-</main>
+<section class="wrap" id="containers"><div class="tag">04 / CONTAINER INVENTORY</div><h2>容器清单</h2><p>2026 年 11 月 6 日实机快照。18 个自管容器，另有 2 个由 DSM 管理的 Document Viewer 容器。端口按宿主机端口 → 容器端口显示。</p><div class="filters"><label>搜索 <input id="query" type="search" placeholder="容器、镜像、项目或网络"></label><label>主机 <select id="host"><option value="">全部</option><option value="nas">Synology NAS</option><option value="macmini">Mac mini</option></select></label><span id="results" role="status">18 个容器</span></div><div class="grid"><article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>media-sublarr</h3><dl><dt>镜像</dt><dd><code>abrechen2/sublarr@sha256:d50a05cc127f5823934782cdc686b5cdcaee20573c7cf9eed0c5f87247e8b142</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>5765 → 5765/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>watchtower</h3><dl><dt>镜像</dt><dd><code>containrrr/watchtower@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-5">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>qbittorrent</h3><dl><dt>镜像</dt><dd><code>ghcr.io/hotio/qbittorrent@sha256:944b91832c8b34306d9197a581c9993813443d9d7e5c4bb0a32cf5fc148f7b36</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>qb_control、qb_direct_lan</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>media-arrival-status</h3><dl><dt>镜像</dt><dd><code>python@sha256:09d17d5e4c16d0a7a1eea690bcb7c6ab8616b211f8421e429e97c1bef5bd0ed2</code></dd><dt>Compose 项目</dt><dd>homelab_media_status</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-6">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>glance</h3><dl><dt>镜像</dt><dd><code>glanceapp/glance@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>6001 → 8080/tcp</dd></dl><a href="#config-2">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-server</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>6104 → 2283/tcp</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-database</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-redis</h3><dl><dt>镜像</dt><dd><code>valkey/valkey@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>media-emby</h3><dl><dt>镜像</dt><dd><code>emby/embyserver@sha256:7082c63b10a2fcb3805a7eaebba407d5723bc57c085c9f0b29b7d0a702765cc1</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>6100 → 8096/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>ani-rss</h3><dl><dt>镜像</dt><dd><code>wushuo894/ani-rss@sha256:4f32b1b536a427cb7110f52593c254d6d87880867c5a6a83cb4a7ea56d4949ee</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default、qb_control</dd><dt>已发布端口</dt><dd>6101 → 9097/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>uptime-kuma</h3><dl><dt>镜像</dt><dd><code>louislam/uptime-kuma@sha256:70233f4acb5163fd2a59a49909cf01e44415cecff13dba69e3a86647a2919f83</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_application_default、homelab_maintenance_default、qb_control</dd><dt>已发布端口</dt><dd>6003 → 3001/tcp</dd></dl><a href="#config-3">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>glances</h3><dl><dt>镜像</dt><dd><code>nicolargo/glances@sha256:413ddc0b03422ab0bcbf30f53faf63c3ee91b354bf544cd01aa60afa73a4cda2</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>6002 → 61208/tcp</dd></dl><a href="#config-3">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>phone-notification-router</h3><dl><dt>镜像</dt><dd><code>caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-4">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>apprise</h3><dl><dt>镜像</dt><dd><code>caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_application_default、homelab_maintenance_default</dd><dt>已发布端口</dt><dd>8000 → 8000/tcp</dd></dl><a href="#config-4">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>adguardhome</h3><dl><dt>镜像</dt><dd><code>adguard/adguardhome@sha256:e2e1b48c832f7705be915873f95de0d5114de573736441d7f2923a8a6293027c</code></dd><dt>Compose 项目</dt><dd>homelab_network</dd><dt>Docker 网络</dt><dd>host</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-7">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>immich-machine-learning</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/immich-machine-learning@sha256:5b28c9352c8374b8a1ed96fbdd8d6755fea6e43510ec43fdf6538aa02ea40f56</code></dd><dt>Compose 项目</dt><dd>immich-ml</dd><dt>Docker 网络</dt><dd>immich-ml_default</dd><dt>已发布端口</dt><dd>3003 → 3003/tcp</dd></dl><a href="#config-9">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>nginx-proxy-manager</h3><dl><dt>镜像</dt><dd><code>jc21/nginx-proxy-manager@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594</code></dd><dt>Compose 项目</dt><dd>npm</dd><dt>Docker 网络</dt><dd>npm_default</dd><dt>已发布端口</dt><dd>443 → 443/tcp、80 → 80/tcp、7001 → 81/tcp</dd></dl><a href="#config-8">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>smartdns</h3><dl><dt>镜像</dt><dd><code>pymumu/smartdns@sha256:8db964569ae6ffc7e9f06f0a516d496c49b6dfc9b1430a2c2e64e7a66c18f1b9</code></dd><dt>Compose 项目</dt><dd>homelab_network</dd><dt>Docker 网络</dt><dd>host</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-7">查看 Compose 配置 ↓</a></article></div></section>
+<section class="wrap" id="configs"><div class="tag">05 / COMPOSE REFERENCE</div><h2>Compose 配置</h2><p>展开查看 10 份配置，包含镜像摘要、环境变量、挂载、网络和健康检查等实际定义。主机路径默认值和具体内网地址已替换，密钥由本地环境变量提供。</p><details id="config-0"><summary><code>photos/photos.yaml</code> · 3 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/photos/photos.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_application
+services:
+  immich-database:
+    command:
+    - postgres
+    - -c
+    - config_file=/etc/postgresql/postgresql.conf
+    - -c
+    - shared_buffers=1024MB
+    - -c
+    - maintenance_work_mem=256MB
+    - -c
+    - effective_cache_size=8GB
+    container_name: immich-database
+    deploy:
+      resources:
+        limits:
+          memory: &#39;3221225472&#39;
+    entrypoint:
+    - /bin/bash
+    - -c
+    - . /usr/local/bin/set-env.sh; exec /usr/local/bin/docker-entrypoint.sh &quot;$@&quot;
+    - --
+    environment:
+      DB_STORAGE_TYPE: HDD
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: --data-checksums
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?请在根 .env 中设置 DB_PASSWORD}
+      POSTGRES_USER: immich
+      TZ: Asia/Shanghai
+    image: ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    networks:
+      homelab_application_default: null
+    restart: unless-stopped
+    shm_size: &#39;1073741824&#39;
+    tmpfs:
+    - /var/run/postgresql:uid=1026,gid=100,mode=3775
+    user: 1026:100
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/photos/immich/postgres
+      target: /var/lib/postgresql/data
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/photos/immich/postgresql.conf
+      target: /etc/postgresql/postgresql.conf
+      read_only: true
+      bind:
+        create_host_path: false
+  immich-redis:
+    container_name: immich-redis
+    deploy:
+      resources:
+        limits:
+          memory: &#39;536870912&#39;
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - redis-cli ping | grep -q PONG || exit 1
+    image: valkey/valkey@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d
+    networks:
+      homelab_application_default: null
+    restart: unless-stopped
+    user: 1026:100
+  immich-server:
+    cpu_shares: 2048
+    container_name: immich-server
+    depends_on:
+      immich-database:
+        condition: service_healthy
+        required: true
+      immich-redis:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          memory: &#39;10737418240&#39;
+    environment:
+      DB_DATABASE_NAME: immich
+      DB_HOSTNAME: immich-database
+      DB_PASSWORD: ${DB_PASSWORD:?请在根 .env 中设置 DB_PASSWORD}
+      DB_PORT: &#39;5432&#39;
+      DB_USERNAME: immich
+      IMMICH_MACHINE_LEARNING_URL: ${IMMICH_MACHINE_LEARNING_URL:-http://service.example.invalid}
+      NODE_OPTIONS: --max-old-space-size=4096
+      REDIS_HOSTNAME: immich-redis
+      TZ: Asia/Shanghai
+    image: ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6
+    networks:
+      homelab_application_default: null
+    ports:
+    - mode: ingress
+      target: 2283
+      published: &#39;6104&#39;
+      protocol: tcp
+    restart: unless-stopped
+    user: 1026:100
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/photos/immich/data
+      target: /data
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT}/Photos
+      target: /mnt/photos
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: false
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true
+</code></pre></details>
+<details id="config-1"><summary><code>media/media.yaml</code> · 4 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/media/media.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_application
+services:
+  ani-rss:
+    container_name: ani-rss
+    deploy:
+      resources:
+        limits:
+          memory: &#39;268435456&#39;
+    environment:
+      CONFIG: /config
+      JAVA_OPTS: -Xms64m -Xmx512m -Xss256k -XX:+UseG1GC -Djdk.tls.namedGroups=X25519,secp256r1,secp384r1
+      PGID: &#39;100&#39;
+      PUID: &#39;1026&#39;
+      SERVER_PORT: &#39;9097&#39;
+      TZ: Asia/Shanghai
+    image: wushuo894/ani-rss@sha256:4f32b1b536a427cb7110f52593c254d6d87880867c5a6a83cb4a7ea56d4949ee
+    networks:
+      homelab_application_default: null
+      qb_control: null
+    ports:
+    - mode: ingress
+      target: 9097
+      published: &#39;6101&#39;
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/ani-rss
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT}
+      target: /entertainments
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/DOWNLOADS
+      target: /fms-downloads
+      bind:
+        create_host_path: false
+  qbittorrent:
+    container_name: qbittorrent
+    deploy:
+      resources:
+        limits:
+          memory: &#39;4294967296&#39;
+    dns:
+    - 192.0.2.10
+    environment:
+      PGID: &#39;0&#39;
+      PUID: &#39;0&#39;
+      TZ: Asia/Shanghai
+      UMASK_SET: &#39;18&#39;
+    image: ghcr.io/hotio/qbittorrent@sha256:944b91832c8b34306d9197a581c9993813443d9d7e5c4bb0a32cf5fc148f7b36
+    mac_address: 02:42:c0:a8:0a:06
+    networks:
+      qb_control:
+        ipv4_address: 198.51.100.2
+      qb_direct_lan:
+        ipv4_address: 192.0.2.10
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/qbittorrent/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/qbittorrent/downloads
+      target: /downloads
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT}
+      target: /entertainments
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/DOWNLOADS
+      target: /fms-downloads
+      bind:
+        create_host_path: false
+  sublarr:
+    container_name: media-sublarr
+    environment:
+      PGID: &#39;100&#39;
+      PUID: &#39;1026&#39;
+      TZ: Asia/Shanghai
+      UMASK: &#39;022&#39;
+    image: abrechen2/sublarr@sha256:d50a05cc127f5823934782cdc686b5cdcaee20573c7cf9eed0c5f87247e8b142
+    labels:
+      com.centurylinklabs.watchtower.enable: &#39;false&#39;
+    mem_limit: &#39;1073741824&#39;
+    memswap_limit: &#39;1073741824&#39;
+    networks:
+      homelab_application_default: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 5765
+      published: &#39;5765&#39;
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/sublarr/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT}
+      target: /media
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/sublarr-overrides/ass_utils.py
+      target: /app/ass_utils.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/sublarr-overrides/embedded_extractor.py
+      target: /app/services/embedded_extractor.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/sublarr-overrides/subtitle_automation_runner.py
+      target: /app/services/subtitle_automation_runner.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/sublarr-overrides/config_singleton.py
+      target: /app/config_singleton.py
+      read_only: true
+      bind:
+        create_host_path: false
+  emby:
+    container_name: media-emby
+    environment:
+      GID: &#39;100&#39;
+      GIDLIST: &#39;0&#39;
+      PGID: &#39;100&#39;
+      PUID: &#39;1026&#39;
+      TZ: Asia/Shanghai
+      UID: &#39;1026&#39;
+      UMASK: &#39;022&#39;
+    image: emby/embyserver@sha256:7082c63b10a2fcb3805a7eaebba407d5723bc57c085c9f0b29b7d0a702765cc1
+    labels:
+      com.centurylinklabs.watchtower.enable: &#39;false&#39;
+    mem_limit: &#39;2147483648&#39;
+    memswap_limit: &#39;2147483648&#39;
+    networks:
+      homelab_application_default: null
+    ports:
+    - mode: ingress
+      host_ip: 0.0.0.0
+      target: 8096
+      published: &#39;6100&#39;
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/emby/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT}/Media
+      target: /media
+      read_only: true
+      bind:
+        create_host_path: false
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true
+  qb_control:
+    name: qb_control
+    external: true
+  qb_direct_lan:
+    name: qb_direct_lan
+    external: true
+</code></pre></details>
+<details id="config-2"><summary><code>dashboard/dashboard.yaml</code> · 1 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/dashboard/dashboard.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_maintenance
+services:
+  glance:
+    container_name: glance
+    deploy:
+      resources:
+        limits:
+          memory: &#39;268435456&#39;
+    environment:
+      ADGUARD_PASSWORD: ${ADGUARD_PASSWORD:?请在根 .env 中设置 ADGUARD_PASSWORD}
+      ADGUARD_USERNAME: ${ADGUARD_USERNAME:?请在根 .env 中设置 ADGUARD_USERNAME}
+      GLANCES_OPT: -w
+      IMMICH_API_KEY: ${IMMICH_API_KEY:?请在根 .env 中设置 IMMICH_API_KEY}
+      IMMICH_URL: http://service.example.invalid
+      EMBY_API_KEY: ${EMBY_API_KEY:?请在根 .env 中设置 EMBY_API_KEY}
+      LANGUAGE: All
+      PERIOD: past_24_hours
+      PGID: &#39;100&#39;
+      PUID: &#39;1026&#39;
+      TZ: Asia/Shanghai
+      UNIFI_API_KEY: ${UNIFI_API_KEY:?请在根 .env 中设置 UNIFI_API_KEY}
+      WAQI_TOKEN: ${WAQI_TOKEN:?请在根 .env 中设置 WAQI_TOKEN}
+    image: glanceapp/glance@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875
+    networks:
+      homelab_maintenance_default: null
+    ports:
+    - mode: ingress
+      target: 8080
+      published: &#39;6001&#39;
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/dashboard/glance/config
+      target: /app/config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      bind:
+        create_host_path: false
+networks:
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true
+</code></pre></details>
+<details id="config-3"><summary><code>monitoring/monitoring.yaml</code> · 2 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/monitoring/monitoring.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_maintenance
+services:
+  glances:
+    container_name: glances
+    deploy:
+      resources:
+        limits:
+          memory: &#39;134217728&#39;
+    environment:
+      GLANCES_OPT: -w
+      PGID: &#39;100&#39;
+      PUID: &#39;1026&#39;
+      TZ: Asia/Shanghai
+    image: nicolargo/glances@sha256:413ddc0b03422ab0bcbf30f53faf63c3ee91b354bf544cd01aa60afa73a4cda2
+    networks:
+      homelab_maintenance_default: null
+    pid: host
+    ports:
+    - mode: ingress
+      target: 61208
+      published: &#39;6002&#39;
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      read_only: true
+      bind:
+        create_host_path: false
+  uptime-kuma:
+    container_name: uptime-kuma
+    deploy:
+      resources:
+        limits:
+          memory: &#39;268435456&#39;
+    environment:
+      TZ: Asia/Shanghai
+    image: louislam/uptime-kuma@sha256:70233f4acb5163fd2a59a49909cf01e44415cecff13dba69e3a86647a2919f83
+    logging:
+      driver: json-file
+      options:
+        max-file: &#39;2&#39;
+        max-size: 5m
+    networks:
+      homelab_application_default: null
+      homelab_maintenance_default: null
+      qb_control: null
+    ports:
+    - mode: ingress
+      target: 3001
+      published: &#39;6003&#39;
+      protocol: tcp
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/monitoring/uptime-kuma/data
+      target: /app/data
+      bind:
+        create_host_path: false
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true
+  qb_control:
+    name: qb_control
+    external: true
+</code></pre></details>
+<details id="config-4"><summary><code>notification/notification.yaml</code> · 2 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/notification/notification.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_maintenance
+services:
+  apprise:
+    cap_drop:
+    - ALL
+    container_name: apprise
+    environment:
+      APPRISE_AUTH_REQUIRED: &#39;yes&#39;
+      APPRISE_PASSWORD: ${APPRISE_PASSWORD:?请在根 .env 中设置 APPRISE_PASSWORD}
+      APPRISE_USER: ${APPRISE_USER:?请在根 .env 中设置 APPRISE_USER}
+      TZ: Asia/Shanghai
+    image: caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5
+    networks:
+      homelab_application_default: null
+      homelab_maintenance_default: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8000
+      published: &#39;8000&#39;
+      protocol: tcp
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    tmpfs:
+    - /tmp:uid=1026,gid=100,mode=1777
+    user: 1026:100
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/notification/apprise/config
+      target: /config
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/notification/apprise/location-override.conf
+      target: /etc/nginx/location-override.conf
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/notification/apprise/server-override.conf
+      target: /etc/nginx/server-override.conf
+      read_only: true
+      bind:
+        create_host_path: false
+  phone-notification-router:
+    cap_add:
+    - NET_RAW
+    cap_drop:
+    - ALL
+    container_name: phone-notification-router
+    entrypoint:
+    - python
+    - /config/route.py
+    image: caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5
+    logging:
+      driver: json-file
+      options:
+        max-file: &#39;2&#39;
+        max-size: 1m
+    networks:
+      homelab_maintenance_default: null
+    read_only: true
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges:true
+    user: 0:0
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/notification/phone-routing
+      target: /config
+      read_only: true
+      bind:
+        create_host_path: false
+networks:
+  homelab_application_default:
+    name: homelab_application_default
+    external: true
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true
+</code></pre></details>
+<details id="config-5"><summary><code>automation/automation.yaml</code> · 1 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/automation/automation.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_maintenance
+services:
+  watchtower:
+    command:
+    - --disable-containers
+    - adguardhome,smartdns,network-gateway
+    container_name: watchtower
+    deploy:
+      resources:
+        limits:
+          memory: &#39;33554432&#39;
+    environment:
+      PGID: &#39;100&#39;
+      PUID: &#39;1026&#39;
+      TZ: Asia/Shanghai
+      WATCHTOWER_CLEANUP: &#39;true&#39;
+      WATCHTOWER_DEBUG: &#39;false&#39;
+      WATCHTOWER_INCLUDE_RESTARTING: &#39;true&#39;
+      WATCHTOWER_LIFECYCLE_HOOKS: &#39;false&#39;
+      WATCHTOWER_NOTIFICATIONS: shoutrrr
+      WATCHTOWER_NOTIFICATION_REPORT: &#39;true&#39;
+      WATCHTOWER_NOTIFICATION_TEMPLATE: &#39;{{- if .Report -}}[NAS][Watchtower][容器更新] 扫描 {{len .Report.Scanned}} 个，更新
+        {{len .Report.Updated}} 个，失败 {{len .Report.Failed}} 个{{- range .Report.Updated }}{{println}}更新：{{.Name}}{{end}}{{-
+        range .Report.Failed }}{{println}}失败：{{.Name}}{{end}}{{- else -}}{{range .Entries}}{{.Message}}{{println}}{{end}}{{-
+        end -}}&#39;
+      WATCHTOWER_NOTIFICATION_TITLE_TAG: NAS
+      WATCHTOWER_NOTIFICATION_URL: ${WATCHTOWER_NOTIFICATION_URL:?请在根 .env 中设置 WATCHTOWER_NOTIFICATION_URL}
+      WATCHTOWER_SCHEDULE: 0 0 4 * * *
+    image: containrrr/watchtower@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038
+    networks:
+      homelab_maintenance_default: null
+    restart: unless-stopped
+    volumes:
+    - type: bind
+      source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      bind:
+        create_host_path: false
+networks:
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true
+</code></pre></details>
+<details id="config-6"><summary><code>media/workflow/media-arrival-status/status.yaml</code> · 1 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/media/workflow/media-arrival-status/status.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_media_status
+services:
+  media-arrival-status:
+    container_name: media-arrival-status
+    image: python@sha256:09d17d5e4c16d0a7a1eea690bcb7c6ab8616b211f8421e429e97c1bef5bd0ed2
+    command:
+    - python3
+    - /app/server.py
+    environment:
+      EMBY_TRANSLATION_DAILY_LIMIT: &#39;100&#39;
+      TZ: Asia/Shanghai
+    volumes:
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/media-arrival-state
+      target: /state
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT}/media/workflow/media-arrival-status
+      target: /app
+      read_only: true
+      bind:
+        create_host_path: false
+    networks:
+      homelab_maintenance_default: null
+    restart: unless-stopped
+networks:
+  homelab_maintenance_default:
+    name: homelab_maintenance_default
+    external: true
+</code></pre></details>
+<details id="config-7"><summary><code>macmini/network.yaml</code> · 2 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/macmini/network.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_network
+services:
+  adguardhome:
+    deploy:
+      resources:
+        limits:
+          memory: &#39;536870912&#39;
+    restart: unless-stopped
+    container_name: adguardhome
+    command:
+    - --no-check-update
+    - -c
+    - /opt/adguardhome/conf/AdGuardHome.yaml
+    - -w
+    - /opt/adguardhome/work
+    environment:
+      TZ: Asia/Shanghai
+    image: adguard/adguardhome@sha256:e2e1b48c832f7705be915873f95de0d5114de573736441d7f2923a8a6293027c
+    network_mode: host
+    volumes:
+    - type: bind
+      source: ${DNS_ROOT}/adguardhome/work
+      target: /opt/adguardhome/work
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT}/adguardhome/conf
+      target: /opt/adguardhome/conf
+      bind:
+        create_host_path: false
+    depends_on:
+      smartdns:
+        condition: service_healthy
+        required: true
+  smartdns:
+    restart: unless-stopped
+    container_name: smartdns
+    environment:
+      TZ: CST-8
+    image: pymumu/smartdns@sha256:8db964569ae6ffc7e9f06f0a516d496c49b6dfc9b1430a2c2e64e7a66c18f1b9
+    mem_limit: &#39;134217728&#39;
+    network_mode: host
+    volumes:
+    - type: bind
+      source: ${DNS_ROOT}/smartdns/conf
+      target: /etc/smartdns
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT}/smartdns/conf/ca-certificates.crt
+      target: /etc/ssl/certs/ca-certificates.crt
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT}/smartdns/data
+      target: /var/lib/smartdns
+      bind:
+        create_host_path: false
+    healthcheck:
+      test:
+      - CMD
+      - nslookup
+      - -type=A
+      - home.guangluo.top
+      - 127.0.0.1:6053
+      timeout: 5s
+      interval: 30s
+      retries: 3
+      start_period: 5s
+</code></pre></details>
+<details id="config-8"><summary><code>macmini/npm.yaml</code> · 1 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/macmini/npm.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>services:
+  npm:
+    image: jc21/nginx-proxy-manager@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+    - 80:80
+    - 443:443
+    - 7001:81
+    volumes:
+    - type: bind
+      source: ${NPM_ROOT}/data/nginx-proxy-manager/data
+      target: /data
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${NPM_ROOT}/data/nginx-proxy-manager/letsencrypt
+      target: /etc/letsencrypt
+      bind:
+        create_host_path: false
+    environment:
+      DISABLE_IPV6: &#39;true&#39;
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: &#39;3&#39;
+    networks:
+      npm_default: null
+name: npm
+networks:
+  npm_default:
+    name: npm_default
+    external: true
+</code></pre></details>
+<details id="config-9"><summary><code>macmini/immich-ml.yaml</code> · 1 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/macmini/immich-ml.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>services:
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning@sha256:5b28c9352c8374b8a1ed96fbdd8d6755fea6e43510ec43fdf6538aa02ea40f56
+    container_name: immich-machine-learning
+    restart: unless-stopped
+    ports:
+    - 3003:3003
+    volumes:
+    - type: bind
+      source: ${ML_ROOT}/model-cache
+      target: /cache
+      bind:
+        create_host_path: false
+    environment:
+      HF_HOME: /cache/hf-cache
+      DEVICE: cpu
+      MACHINE_LEARNING_CACHE_FOLDER: /cache
+      MACHINE_LEARNING_WORKERS: &#39;2&#39;
+      MACHINE_LEARNING_WORKER_TIMEOUT: &#39;600&#39;
+      MACHINE_LEARNING_MODEL_ARENA: &#39;false&#39;
+      TRANSFORMERS_CACHE: /cache
+    networks:
+      immich-ml_default: null
+name: immich-ml
+networks:
+  immich-ml_default:
+    name: immich-ml_default
+    external: true
+</code></pre></details></section>
+<section class="wrap" id="restore"><div class="tag">06 / RESTORE</div><h2>恢复与配置依赖</h2><ol><li>从 <a href="https://github.com/guangl/homelab-docker/blob/main/.env.example">.env.example</a> 创建各主机的本地环境文件，并从私有备份恢复密钥。</li><li>恢复 Emby、Kuma、Immich PostgreSQL 和照片数据，以及 NPM 数据和证书。保留 Sublarr 的四个补丁挂载。</li><li>按目标主机创建缺失的 Docker 网络。qBittorrent 连接隔离控制网络和 macvlan，Mac mini 上的 DNS 使用 host 网络。</li><li>在对应主机先运行 <code>bash scripts/current.sh check nas</code> 或 <code>bash scripts/current.sh check macmini</code>。检查通过后，将 <code>check</code> 换成 <code>apply</code>。同一 Compose 项目分布在多个文件中，恢复时须避免使用 <code>--remove-orphans</code>。</li></ol><p><a href="https://github.com/guangl/homelab-docker/blob/main/docs/restore.md">完整恢复说明 ↗</a></p></section>
+<script>
+const query = document.querySelector('#query');
+const host = document.querySelector('#host');
+const containers = [...document.querySelectorAll('.container')];
+function filterContainers() {
+  const search = query.value.trim().toLowerCase();
+  let count = 0;
+  for (const card of containers) {
+    card.hidden = Boolean(host.value && card.dataset.host !== host.value) ||
+      !card.textContent.toLowerCase().includes(search);
+    if (!card.hidden) count++;
+  }
+  document.querySelector('#results').textContent = count + ' 个容器';
+}
+query.addEventListener('input', filterContainers);
+host.addEventListener('change', filterContainers);
+function revealConfig() {
+  const match = /^#config-\d+$/.test(location.hash);
+  if (match) document.getElementById(location.hash.slice(1))?.setAttribute('open', '');
+}
+window.addEventListener('hashchange', revealConfig);
+revealConfig();
+</script></main>
 <footer><div class="wrap">部署快照 · 2026 年 11 月 6 日　<a href="https://github.com/guangl/homelab-docker">查看源码与部署记录 ↗</a></div></footer>
 </body></html>
