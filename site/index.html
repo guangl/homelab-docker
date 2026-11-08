@@ -9,7 +9,7 @@
 .container{min-width:0}.container dl{margin:12px 0}.container dt{color:var(--sub);font-size:.85rem}.container dd{overflow-wrap:anywhere;margin-bottom:8px}.filters{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin:16px 0}input,select{font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:6px}details{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:12px 16px;scroll-margin-top:12px}summary{cursor:pointer;overflow-wrap:anywhere}pre{overflow:auto;max-height:34rem;background:var(--bg);padding:14px;border-radius:5px}li{margin-bottom:8px}</style>
 </head>
 <body>
-<header><nav class="wrap" aria-label="主导航"><a class="mono" href="#top">GL / HOMELAB</a><div><a href="#architecture">架构</a><a href="#services">服务</a><a href="#containers">容器</a><a href="#configs">配置</a><a href="https://github.com/guangl/homelab-docker">GitHub ↗</a></div></nav></header>
+<header><nav class="wrap" aria-label="主导航"><a class="mono" href="#top">GL / HOMELAB</a><div><a href="#architecture">架构</a><a href="#services">服务</a><a href="#containers">容器</a><a href="#configs">Compose</a><a href="#app-configs">应用配置</a><a href="https://github.com/guangl/homelab-docker">GitHub ↗</a></div></nav></header>
 <main id="top">
 <div class="hero"><div class="wrap">
 <div class="mono">FIELD NOTES / 2026.11.06</div>
@@ -38,22 +38,22 @@
 </section>
 <section class="wrap" id="containers"><div class="tag">04 / CONTAINER INVENTORY</div><h2>容器清单</h2><p>2026 年 11 月 6 日实机快照。18 个自管容器，另有 2 个由 DSM 管理的 Document Viewer 容器。端口按宿主机端口 → 容器端口显示。</p><div class="filters"><label>搜索 <input id="query" type="search" placeholder="容器、镜像、项目或网络"></label><label>主机 <select id="host"><option value="">全部</option><option value="nas">Synology NAS</option><option value="macmini">Mac mini</option></select></label><span id="results" role="status">18 个容器</span></div><div class="grid"><article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>media-sublarr</h3><dl><dt>镜像</dt><dd><code>abrechen2/sublarr@sha256:d50a05cc127f5823934782cdc686b5cdcaee20573c7cf9eed0c5f87247e8b142</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>5765 → 5765/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>watchtower</h3><dl><dt>镜像</dt><dd><code>containrrr/watchtower@sha256:6dd50763bbd632a83cb154d5451700530d1e44200b268a4e9488fefdfcf2b038</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-5">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>qbittorrent</h3><dl><dt>镜像</dt><dd><code>ghcr.io/hotio/qbittorrent@sha256:944b91832c8b34306d9197a581c9993813443d9d7e5c4bb0a32cf5fc148f7b36</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>qb_control、qb_direct_lan</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>qbittorrent</h3><dl><dt>镜像</dt><dd><code>ghcr.io/hotio/qbittorrent@sha256:944b91832c8b34306d9197a581c9993813443d9d7e5c4bb0a32cf5fc148f7b36</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>qb_control、qb_direct_lan</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a> <a href="#app-config-3">应用配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>media-arrival-status</h3><dl><dt>镜像</dt><dd><code>python@sha256:09d17d5e4c16d0a7a1eea690bcb7c6ab8616b211f8421e429e97c1bef5bd0ed2</code></dd><dt>Compose 项目</dt><dd>homelab_media_status</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-6">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>glance</h3><dl><dt>镜像</dt><dd><code>glanceapp/glance@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>6001 → 8080/tcp</dd></dl><a href="#config-2">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>glance</h3><dl><dt>镜像</dt><dd><code>glanceapp/glance@sha256:bc5a392672c1ec8823c50b61f3bd4b7e5acc34fcbb8477862577b3af1c633875</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>6001 → 8080/tcp</dd></dl><a href="#config-2">查看 Compose 配置 ↓</a> <a href="#app-config-5">应用配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-server</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>6104 → 2283/tcp</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-database</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-database</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a> <a href="#app-config-4">应用配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>immich-redis</h3><dl><dt>镜像</dt><dd><code>valkey/valkey@sha256:c123e3715db63d06d4ad6964884037aa0d5d4d703939b9929954112889708e1d</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-0">查看 Compose 配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>media-emby</h3><dl><dt>镜像</dt><dd><code>emby/embyserver@sha256:7082c63b10a2fcb3805a7eaebba407d5723bc57c085c9f0b29b7d0a702765cc1</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default</dd><dt>已发布端口</dt><dd>6100 → 8096/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>ani-rss</h3><dl><dt>镜像</dt><dd><code>wushuo894/ani-rss@sha256:4f32b1b536a427cb7110f52593c254d6d87880867c5a6a83cb4a7ea56d4949ee</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default、qb_control</dd><dt>已发布端口</dt><dd>6101 → 9097/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>ani-rss</h3><dl><dt>镜像</dt><dd><code>wushuo894/ani-rss@sha256:4f32b1b536a427cb7110f52593c254d6d87880867c5a6a83cb4a7ea56d4949ee</code></dd><dt>Compose 项目</dt><dd>homelab_application</dd><dt>Docker 网络</dt><dd>homelab_application_default、qb_control</dd><dt>已发布端口</dt><dd>6101 → 9097/tcp</dd></dl><a href="#config-1">查看 Compose 配置 ↓</a> <a href="#app-config-2">应用配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>uptime-kuma</h3><dl><dt>镜像</dt><dd><code>louislam/uptime-kuma@sha256:70233f4acb5163fd2a59a49909cf01e44415cecff13dba69e3a86647a2919f83</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_application_default、homelab_maintenance_default、qb_control</dd><dt>已发布端口</dt><dd>6003 → 3001/tcp</dd></dl><a href="#config-3">查看 Compose 配置 ↓</a></article>
 <article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>glances</h3><dl><dt>镜像</dt><dd><code>nicolargo/glances@sha256:413ddc0b03422ab0bcbf30f53faf63c3ee91b354bf544cd01aa60afa73a4cda2</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>6002 → 61208/tcp</dd></dl><a href="#config-3">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>phone-notification-router</h3><dl><dt>镜像</dt><dd><code>caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-4">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>apprise</h3><dl><dt>镜像</dt><dd><code>caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_application_default、homelab_maintenance_default</dd><dt>已发布端口</dt><dd>8000 → 8000/tcp</dd></dl><a href="#config-4">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>adguardhome</h3><dl><dt>镜像</dt><dd><code>adguard/adguardhome@sha256:e2e1b48c832f7705be915873f95de0d5114de573736441d7f2923a8a6293027c</code></dd><dt>Compose 项目</dt><dd>homelab_network</dd><dt>Docker 网络</dt><dd>host</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-7">查看 Compose 配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>phone-notification-router</h3><dl><dt>镜像</dt><dd><code>caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_maintenance_default</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-4">查看 Compose 配置 ↓</a> <a href="#app-config-6">应用配置 ↓</a></article>
+<article class="card container" data-host="nas"><div class="tag">SYNOLOGY</div><h3>apprise</h3><dl><dt>镜像</dt><dd><code>caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5</code></dd><dt>Compose 项目</dt><dd>homelab_maintenance</dd><dt>Docker 网络</dt><dd>homelab_application_default、homelab_maintenance_default</dd><dt>已发布端口</dt><dd>8000 → 8000/tcp</dd></dl><a href="#config-4">查看 Compose 配置 ↓</a> <a href="#app-config-8">应用配置 ↓</a> <a href="#app-config-7">应用配置 ↓</a></article>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>adguardhome</h3><dl><dt>镜像</dt><dd><code>adguard/adguardhome@sha256:e2e1b48c832f7705be915873f95de0d5114de573736441d7f2923a8a6293027c</code></dd><dt>Compose 项目</dt><dd>homelab_network</dd><dt>Docker 网络</dt><dd>host</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-7">查看 Compose 配置 ↓</a> <a href="#app-config-0">应用配置 ↓</a></article>
 <article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>immich-machine-learning</h3><dl><dt>镜像</dt><dd><code>ghcr.io/immich-app/immich-machine-learning@sha256:5b28c9352c8374b8a1ed96fbdd8d6755fea6e43510ec43fdf6538aa02ea40f56</code></dd><dt>Compose 项目</dt><dd>immich-ml</dd><dt>Docker 网络</dt><dd>immich-ml_default</dd><dt>已发布端口</dt><dd>3003 → 3003/tcp</dd></dl><a href="#config-9">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>nginx-proxy-manager</h3><dl><dt>镜像</dt><dd><code>jc21/nginx-proxy-manager@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594</code></dd><dt>Compose 项目</dt><dd>npm</dd><dt>Docker 网络</dt><dd>npm_default</dd><dt>已发布端口</dt><dd>443 → 443/tcp、80 → 80/tcp、7001 → 81/tcp</dd></dl><a href="#config-8">查看 Compose 配置 ↓</a></article>
-<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>smartdns</h3><dl><dt>镜像</dt><dd><code>pymumu/smartdns@sha256:8db964569ae6ffc7e9f06f0a516d496c49b6dfc9b1430a2c2e64e7a66c18f1b9</code></dd><dt>Compose 项目</dt><dd>homelab_network</dd><dt>Docker 网络</dt><dd>host</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-7">查看 Compose 配置 ↓</a></article></div></section>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>nginx-proxy-manager</h3><dl><dt>镜像</dt><dd><code>jc21/nginx-proxy-manager@sha256:4393e642e233e5efd5adeb7f10918d4aaea71c9ed875b94190273fc8e87f9594</code></dd><dt>Compose 项目</dt><dd>npm</dd><dt>Docker 网络</dt><dd>npm_default</dd><dt>已发布端口</dt><dd>443 → 443/tcp、80 → 80/tcp、7001 → 81/tcp</dd></dl><a href="#config-8">查看 Compose 配置 ↓</a> <a href="#app-config-9">应用配置 ↓</a></article>
+<article class="card container" data-host="macmini"><div class="tag">MAC MINI</div><h3>smartdns</h3><dl><dt>镜像</dt><dd><code>pymumu/smartdns@sha256:8db964569ae6ffc7e9f06f0a516d496c49b6dfc9b1430a2c2e64e7a66c18f1b9</code></dd><dt>Compose 项目</dt><dd>homelab_network</dd><dt>Docker 网络</dt><dd>host</dd><dt>已发布端口</dt><dd>—</dd></dl><a href="#config-7">查看 Compose 配置 ↓</a> <a href="#app-config-1">应用配置 ↓</a></article></div></section>
 <section class="wrap" id="configs"><div class="tag">05 / COMPOSE REFERENCE</div><h2>Compose 配置</h2><p>展开查看 10 份配置，包含镜像摘要、环境变量、挂载、网络和健康检查等实际定义。主机路径默认值和具体内网地址已替换，密钥由本地环境变量提供。</p><details id="config-0"><summary><code>photos/photos.yaml</code> · 3 个容器</summary><p><a href="https://github.com/guangl/homelab-docker/blob/main/photos/photos.yaml">查看仓库中的原文件 ↗</a></p><pre tabindex="0"><code>name: homelab_application
 services:
   immich-database:
@@ -774,7 +774,187 @@ networks:
     name: immich-ml_default
     external: true
 </code></pre></details></section>
-<section class="wrap" id="restore"><div class="tag">06 / RESTORE</div><h2>恢复与配置依赖</h2><ol><li>从 <a href="https://github.com/guangl/homelab-docker/blob/main/.env.example">.env.example</a> 创建各主机的本地环境文件，并从私有备份恢复密钥。</li><li>恢复 Emby、Kuma、Immich PostgreSQL 和照片数据，以及 NPM 数据和证书。保留 Sublarr 的四个补丁挂载。</li><li>按目标主机创建缺失的 Docker 网络。qBittorrent 连接隔离控制网络和 macvlan，Mac mini 上的 DNS 使用 host 网络。</li><li>在对应主机先运行 <code>bash scripts/current.sh check nas</code> 或 <code>bash scripts/current.sh check macmini</code>。检查通过后，将 <code>check</code> 换成 <code>apply</code>。同一 Compose 项目分布在多个文件中，恢复时须避免使用 <code>--remove-orphans</code>。</li></ol><p><a href="https://github.com/guangl/homelab-docker/blob/main/docs/restore.md">完整恢复说明 ↗</a></p></section>
+<section class="wrap" id="app-configs"><div class="tag">06 / APPLICATION CONFIGURATION</div><h2>容器内的应用配置</h2><p>以下为仓库文件与模板的配置节选。每项标注容器内路径，可跳转查看原文件。Nginx Proxy Manager 展示的是路由导出，域名与后端地址均使用占位值。</p><details id="app-config-0"><summary>adguardhome · <code>AdGuardHome.yaml.example</code></summary><p>容器内位置 <code>/opt/adguardhome/conf/AdGuardHome.yaml</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/network/templates/adguardhome/conf/AdGuardHome.yaml.example">仓库原文件 ↗</a></p><pre tabindex="0"><code>dns:
+  bind_hosts:
+  port: 53
+  cache_size: 4194304
+  cache_optimistic: false
+  enabled: false
+querylog:
+  enabled: true
+statistics:
+  enabled: true
+  enabled: false
+filtering:
+  enabled: true</code></pre></details>
+<details id="app-config-1"><summary>smartdns · <code>smartdns.conf.example</code></summary><p>容器内位置 <code>/etc/smartdns/smartdns.conf</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/network/templates/smartdns/conf/smartdns.conf.example">仓库原文件 ↗</a></p><pre tabindex="0"><code>server-name homelab-smartdns
+bind 127.0.0.1:6053
+cache-size 16384
+proxy-server socks5://proxy.example.invalid:6153 -name surge
+server-https https://cloudflare-dns.com/dns-query -host-ip 1.1.1.1 -proxy surge
+server-https https://cloudflare-dns.com/dns-query -host-ip 1.0.0.1 -proxy surge
+server-https https://dns.google/dns-query -host-ip 8.8.8.8 -proxy surge
+server-https https://dns.alidns.com/dns-query -host-ip 223.5.5.5 -group domestic -exclude-default-group
+server-https https://doh.pub/dns-query -host-ip 1.12.12.12 -group domestic -exclude-default-group
+domain-set -name china -file /etc/smartdns/china-domains.txt
+domain-rules /domain-set:china/ -speed-check-mode tcp:443 -response-mode first-ping
+domain-rules /REPLACE_BOOTSTRAP_DOMAIN_1/ -nameserver domestic -no-cache -no-serve-expired -rr-ttl-max 60 -speed-check-mode none
+domain-rules /REPLACE_BOOTSTRAP_DOMAIN_2/ -nameserver domestic -no-cache -no-serve-expired -rr-ttl-max 60 -speed-check-mode none
+domain-rules /REPLACE_BOOTSTRAP_DOMAIN_3/ -nameserver domestic -no-cache -no-serve-expired -rr-ttl-max 60 -speed-check-mode none</code></pre></details>
+<details id="app-config-2"><summary>ani-rss · <code>config.v2.json.example</code></summary><p>容器内位置 <code>/config/config.v2.json</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/media/templates/ani-rss/config.v2.json.example">仓库原文件 ↗</a></p><pre tabindex="0"><code>  "downloadToolType": "qBittorrent",
+  "downloadRetry": 3,
+  "qbUseDownloadPath": true,
+  "qbContentLayout": "Subfolder",
+  "downloadPathTemplate": "/entertainments/Media/番剧/${title}/Season ${season}",
+  "ovaDownloadPathTemplate": "/entertainments/Media/剧场版/${title}",
+  "rssSleepMinutes": 15,</code></pre></details>
+<details id="app-config-3"><summary>qbittorrent · <code>qBittorrent.conf.example</code></summary><p>容器内位置 <code>/config/qBittorrent.conf</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/media/templates/qbittorrent/qBittorrent.conf.example">仓库原文件 ↗</a></p><pre tabindex="0"><code>[Application]
+FileLogger\Age=1
+FileLogger\AgeType=1
+FileLogger\Backup=true
+FileLogger\DeleteOld=true
+FileLogger\Enabled=true
+FileLogger\MaxSizeBytes=66560
+FileLogger\Path=/app/qBittorrent/data/logs
+[BitTorrent]
+Session\AddTorrentStopped=true
+Session\AddTorrentToTopOfQueue=true
+Session\DisableAutoTMMByDefault=false
+Session\GlobalMaxInactiveSeedingMinutes=1440
+Session\GlobalMaxRatio=1
+Session\GlobalMaxSeedingMinutes=1440
+Session\MaxActiveCheckingTorrents=100
+Session\MaxActiveDownloads=50
+Session\MaxActiveTorrents=50
+[Core]
+[LegalNotice]
+[Meta]
+[Preferences]
+[RSS]</code></pre></details>
+<details id="app-config-4"><summary>immich-database · <code>postgresql.conf</code></summary><p>容器内位置 <code>/etc/postgresql/postgresql.conf</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/photos/templates/immich/postgresql.conf">仓库原文件 ↗</a></p><pre tabindex="0"><code>include_if_exists '/var/lib/postgresql/data/postgresql.conf'
+shared_preload_libraries = 'vchord.so, vectors.so'
+shared_buffers = 512MB
+include_if_exists '/var/lib/postgresql/data/postgresql.override.conf'</code></pre></details>
+<details id="app-config-5"><summary>glance · <code>glance.yml</code></summary><p>容器内位置 <code>/app/config/glance.yml</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/dashboard/glance/config/glance.yml">仓库原文件 ↗</a></p><pre tabindex="0"><code>pages:
+  - $include: home_page.yml
+  - $include: homelab_page.yml
+  - $include: development_page.yml
+  - $include: photography_page.yaml
+theme:
+  background-color: 220 15 10
+  primary-color: 166 38 65
+  positive-color: 155 42 60
+  negative-color: 0 60 68</code></pre></details>
+<details id="app-config-6"><summary>phone-notification-router · <code>router.json.example</code></summary><p>容器内位置 <code>/config/router.json</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/notification/templates/phone-routing/router.json.example">仓库原文件 ↗</a></p><pre tabindex="0"><code>{
+  "mail": "REPLACE_APPRISE_EMAIL_URL",
+  "bark": "REPLACE_APPRISE_BARK_URL",
+  "user": "REPLACE_USER",
+  "password": "REPLACE_APPRISE_PASSWORD"
+}</code></pre></details>
+<details id="app-config-7"><summary>apprise · <code>location-override.conf</code></summary><p>容器内位置 <code>/etc/nginx/location-override.conf</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/notification/templates/apprise/location-override.conf">仓库原文件 ↗</a></p><pre tabindex="0"><code>proxy_set_header Accept application/json;</code></pre></details>
+<details id="app-config-8"><summary>apprise · <code>server-override.conf</code></summary><p>容器内位置 <code>/etc/nginx/server-override.conf</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/notification/templates/apprise/server-override.conf">仓库原文件 ↗</a></p><pre tabindex="0"><code># Transcoding notification endpoint removed 2026-11-03.</code></pre></details>
+<details id="app-config-9"><summary>nginx-proxy-manager · <code>npm-proxy-hosts.json</code></summary><p>容器内位置 <code>/data（持久化目录）</code> · <a href="https://github.com/guangl/homelab-docker/blob/main/macmini/npm-proxy-hosts.json">仓库原文件 ↗</a></p><pre tabindex="0"><code>[
+  {
+    "domain_names": [
+      "service-1.example.invalid"
+    ],
+    "forward_host": "backend-1.example.invalid",
+    "forward_port": 8080,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-2.example.invalid"
+    ],
+    "forward_host": "backend-2.example.invalid",
+    "forward_port": 6101,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-3.example.invalid"
+    ],
+    "forward_host": "backend-3.example.invalid",
+    "forward_port": 6100,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-4.example.invalid"
+    ],
+    "forward_host": "backend-4.example.invalid",
+    "forward_port": 6001,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-5.example.invalid"
+    ],
+    "forward_host": "backend-5.example.invalid",
+    "forward_port": 6002,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-6.example.invalid"
+    ],
+    "forward_host": "backend-6.example.invalid",
+    "forward_port": 7001,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-7.example.invalid"
+    ],
+    "forward_host": "backend-7.example.invalid",
+    "forward_port": 5001,
+    "forward_scheme": "https",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 0
+  },
+  {
+    "domain_names": [
+      "service-8.example.invalid"
+    ],
+    "forward_host": "backend-8.example.invalid",
+    "forward_port": 6200,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 1
+  },
+  {
+    "domain_names": [
+      "service-9.example.invalid"
+    ],
+    "forward_host": "backend-9.example.invalid",
+    "forward_port": 6003,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 1
+  },
+  {
+    "domain_names": [
+      "service-10.example.invalid"
+    ],
+    "forward_host": "backend-10.example.invalid",
+    "forward_port": 6104,
+    "forward_scheme": "http",
+    "ssl_forced": 1,
+    "allow_websocket_upgrade": 1
+  }
+]</code></pre></details><h3>从私有备份恢复的配置</h3><p>Emby、Sublarr、Uptime Kuma 和 Apprise 的运行设置由应用保存在配置目录或数据库中。恢复时需准备对应备份。Immich 数据库和照片、NPM 数据库与证书也需要单独恢复。</p></section><section class="wrap" id="restore"><div class="tag">07 / RESTORE</div><h2>恢复与配置依赖</h2><ol><li>从 <a href="https://github.com/guangl/homelab-docker/blob/main/.env.example">.env.example</a> 创建各主机的本地环境文件，并从私有备份恢复密钥。</li><li>恢复 Emby、Kuma、Immich PostgreSQL 和照片数据，以及 NPM 数据和证书。保留 Sublarr 的四个补丁挂载。</li><li>按目标主机创建缺失的 Docker 网络。qBittorrent 连接隔离控制网络和 macvlan，Mac mini 上的 DNS 使用 host 网络。</li><li>在对应主机先运行 <code>bash scripts/current.sh check nas</code> 或 <code>bash scripts/current.sh check macmini</code>。检查通过后，将 <code>check</code> 换成 <code>apply</code>。同一 Compose 项目分布在多个文件中，恢复时须避免使用 <code>--remove-orphans</code>。</li></ol><p><a href="https://github.com/guangl/homelab-docker/blob/main/docs/restore.md">完整恢复说明 ↗</a></p></section>
 <script>
 const query = document.querySelector('#query');
 const host = document.querySelector('#host');
@@ -792,7 +972,7 @@ function filterContainers() {
 query.addEventListener('input', filterContainers);
 host.addEventListener('change', filterContainers);
 function revealConfig() {
-  const match = /^#config-\d+$/.test(location.hash);
+  const match = /^#(?:app-)?config-\d+$/.test(location.hash);
   if (match) document.getElementById(location.hash.slice(1))?.setAttribute('open', '');
 }
 window.addEventListener('hashchange', revealConfig);
