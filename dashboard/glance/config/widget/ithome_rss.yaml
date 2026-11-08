@@ -1,8 +1,0 @@
-- type: rss
-  title: IT之家
-  cache: 1h
-  limit: 10
-  collapse-after: 5
-  feeds:
-  - url: https://www.ithome.com/rss/
-    title: IT之家

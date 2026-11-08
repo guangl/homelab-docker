@@ -1,4 +1,0 @@
-- type: group
-  widgets:
-    - $include: hacker_news.yml
-    - $include: lobsters.yml

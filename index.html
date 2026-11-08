@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Guang 的家庭实验室，记录网络、存储、媒体和照片服务的部署。">
+<title>Guang’s Homelab · 家庭实验室</title>
+<style>
+:root{color-scheme:dark;--bg:#10171b;--panel:#172228;--line:#33464c;--ink:#f0f5f2;--sub:#b6c7c9;--accent:#b9f78a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,sans-serif}a{color:var(--accent)}a:focus-visible{outline:2px solid var(--accent);outline-offset:5px}.wrap{width:min(1080px,92%);margin:auto}header{border-bottom:1px solid var(--line)}nav{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:18px 0}nav div{display:flex;gap:18px;flex-wrap:wrap}nav a{text-decoration:none}.mono,.tag{font:13px/1.5 ui-monospace,monospace;letter-spacing:.08em;color:var(--accent)}.hero{padding:clamp(42px,8vw,100px) 0 56px;background:radial-gradient(ellipse at 82% 20%,#243d32,transparent 62%)}h1{font-size:clamp(40px,8vw,94px);line-height:1.06;letter-spacing:-.06em;margin:18px 0}p{color:var(--sub)}.hero p{max-width:46ch;font-size:1.12rem}.button{display:inline-block;padding:9px 16px;border:1px solid var(--accent);border-radius:6px;text-decoration:none}.stats,.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stats{margin-top:36px}.card,.stats div,.flow{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:18px}.stats strong{display:block;font-size:2rem;line-height:1.2}section{padding:30px 0}h2{font-size:clamp(25px,4vw,38px);margin:0 0 18px}h3{margin:5px 0}.card p{margin:6px 0 0}.flow dl{display:grid;grid-template-columns:minmax(105px,1fr) 3fr;gap:12px;margin:0}.flow dt{color:var(--accent)}dd{margin:0;color:var(--sub)}footer{margin-top:35px;padding:22px 0;border-top:1px solid var(--line);color:var(--sub)}@media(max-width:650px){.grid{grid-template-columns:1fr}.stats div{padding:12px}.flow dl{grid-template-columns:1fr;gap:4px}.flow dd{margin-bottom:12px}}
+</style>
+</head>
+<body>
+<header><nav class="wrap" aria-label="主导航"><a class="mono" href="#top">GL / HOMELAB</a><div><a href="#architecture">架构</a><a href="#services">服务</a><a href="https://github.com/guangl/homelab-docker">GitHub ↗</a></div></nav></header>
+<main id="top">
+<div class="hero"><div class="wrap">
+<div class="mono">FIELD NOTES / 2026.11.06</div>
+<h1>Guang’s Homelab</h1>
+<p>一套为家庭网络、影音和照片而建的自托管环境。Mac mini 负责网络服务，Synology 保存数据并承载应用，UniFi 连接整个家庭网络。</p>
+<a class="button" href="#architecture">查看架构 ↓</a>
+<div class="stats" aria-label="2026 年 11 月 6 日容器快照"><div><strong>18</strong>自管容器</div><div><strong>14</strong>NAS 容器</div><div><strong>4</strong>Mac mini 容器</div></div>
+</div></div>
+<section class="wrap" id="architecture">
+<div class="tag">01 / INFRASTRUCTURE</div><h2>架构与设备</h2>
+<div class="grid">
+<article class="card"><div class="tag">GATEWAY</div><h3>UniFi UDM SE</h3><p>家庭网关，负责局域网与互联网之间的连接。</p></article>
+<article class="card"><div class="tag">COMPUTE</div><h3>Mac mini M4</h3><p>运行 AdGuard Home、SmartDNS、Nginx Proxy Manager，并承担 Immich 机器学习任务。</p></article>
+<article class="card"><div class="tag">STORAGE</div><h3>Synology DS925+</h3><p>24 GB 内存，存放影音和照片，承载家庭应用与监控服务。</p></article>
+</div>
+</section>
+<section class="wrap" id="services">
+<div class="tag">02 / APPLICATIONS</div><h2>家庭服务</h2>
+<div class="grid">
+<article class="card"><h3>影音</h3><p>Emby 管理媒体库，Ani-RSS 订阅动画更新。</p></article>
+<article class="card"><h3>照片</h3><p>Immich 管理照片。照片库和机器学习任务分布在两台主机上。</p></article>
+<article class="card"><h3>看板与监控</h3><p>Glance 汇总服务，Glances 查看主机指标，Uptime Kuma 检查服务可用性。</p></article>
+</div></section>
+<section class="wrap"><div class="tag">03 / OPERATIONS</div><h2>网络与维护</h2>
+<div class="flow"><dl><dt>DNS</dt><dd>AdGuard Home 接收查询，SmartDNS 按域名选择上游。</dd><dt>反向代理</dt><dd>Nginx Proxy Manager 转发应用请求。</dd><dt>恢复</dt><dd>Docker Compose 记录部署结构，镜像固定到摘要。恢复时分别准备配置与应用数据。</dd></dl></div>
+</section>
+</main>
+<footer><div class="wrap">部署快照 · 2026 年 11 月 6 日　<a href="https://github.com/guangl/homelab-docker">查看源码与部署记录 ↗</a></div></footer>
+</body></html>

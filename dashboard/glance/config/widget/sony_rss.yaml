@@ -1,9 +1,0 @@
-- type: rss
-  title: Sony 器材观察
-  cache: 4h
-  limit: 12
-  collapse-after: 5
-  feeds:
-  - url: https://www.sonyalpharumors.com/feed/
-    title: SonyAlphaRumors · 非官方
-    limit: 6

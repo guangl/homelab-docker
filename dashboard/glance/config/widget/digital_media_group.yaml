@@ -1,5 +1,0 @@
-- type: group
-  widgets:
-    - $include: apple_rss.yaml
-    - $include: ithome_rss.yaml
-    - $include: ifanr_rss.yaml
