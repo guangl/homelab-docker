@@ -74,6 +74,7 @@ document:
     .studio-bookmark-links a:hover { background: color-mix(in srgb, var(--color-primary) 16%, transparent); }
     .widget-type-monitor .widget-content { padding-block: 18px; }
     .widget-type-monitor > .widget-header { margin-top: 26px; }
+    .page-column > .widget-type-monitor:first-child > .widget-header { margin-top: 0; }
     .studio-bookmarks a { color: var(--color-text-highlight); font-size: 14px; }
     .studio-bookmarks a:hover { color: var(--color-primary); }
     .studio-network-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }

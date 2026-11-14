@@ -14,9 +14,20 @@ Importing rule: this module imports ``Settings``/``BootSettings``/
 way round.
 """
 
+import sqlite3
 import threading
 
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
 from config_settings import BootSettings, Settings, UISettings
+
+
+@event.listens_for(Engine, "checkout")
+def _sqlite_writer_wait(connection, _record, _proxy):
+    """Apply the same writer wait to the app pool and scheduler job store."""
+    if isinstance(connection, sqlite3.Connection):
+        connection.execute("PRAGMA busy_timeout=30000").close()
 
 _settings: Settings | None = None
 _settings_lock = threading.Lock()

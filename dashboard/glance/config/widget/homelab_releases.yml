@@ -1,15 +1,33 @@
-- type: releases
+- type: rss
   title: 家庭服务更新
   cache: 6h
   limit: 10
   collapse-after: 5
-  show-source-icon: true
-  repositories:
-    - glanceapp/glance
-    - immich-app/immich
-    - AdguardTeam/AdGuardHome
-    - louislam/uptime-kuma
-    - pymumu/smartdns
-    - caronc/apprise
-    - NginxProxyManager/nginx-proxy-manager
-    - qbittorrent/qBittorrent
+  feeds:
+  - url: https://github.com/glanceapp/glance/releases.atom
+    title: glance
+    limit: 1
+  - url: https://github.com/immich-app/immich/releases.atom
+    title: immich
+    limit: 1
+  - url: https://github.com/AdguardTeam/AdGuardHome/releases.atom
+    title: AdGuardHome
+    limit: 1
+  - url: https://github.com/louislam/uptime-kuma/releases.atom
+    title: uptime-kuma
+    limit: 1
+  - url: https://github.com/sagernet/sing-box/releases.atom
+    title: sing-box
+    limit: 1
+  - url: https://github.com/pymumu/smartdns/releases.atom
+    title: smartdns
+    limit: 1
+  - url: https://github.com/caronc/apprise/releases.atom
+    title: apprise
+    limit: 1
+  - url: https://github.com/NginxProxyManager/nginx-proxy-manager/releases.atom
+    title: nginx-proxy-manager
+    limit: 1
+  - url: https://github.com/qbittorrent/qBittorrent/releases.atom
+    title: qBittorrent
+    limit: 1

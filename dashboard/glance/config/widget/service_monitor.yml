@@ -26,7 +26,3 @@
       url: https://top.guangluo.top
       check-url: http://192.168.10.5:6002
       icon: mdi:server
-    - title: AdGuard Home
-      url: https://adguard.guangluo.top
-      check-url: http://192.168.10.4:6200
-      icon: si:adguard

@@ -26,7 +26,7 @@ NAS `192.168.10.5` 的运行根目录为 `/volume1/docker/homelab`，按 `media`
 | DSM | https://nas.guangluo.top | NAS:5001（HTTPS） |
 | NPM | https://nginx.guangluo.top | Mac mini:7001 |
 
-镜像固定为实机使用的 registry digest。按 [恢复说明](docs/restore.md) 准备数据、私有配置和网络后，在对应主机运行 `bash scripts/current.sh check nas|macmini`；需要部署时运行 `apply`。相同项目拆为多文件，禁止使用 `--remove-orphans`。
+镜像固定为 registry digest。运行 `bash scripts/current.sh plan nas` 可列出 NAS 的编排文件，Mac mini 使用 `plan macmini`。在目标主机准备数据、私有配置和网络后，使用 `check` 预检，使用 `apply` 恢复。参数和配置字段见 [恢复说明](docs/restore.md)。
 
 配置整理未更改或重启现网容器。移除已停用的 NAS DNS / Sing-box 网关 / 公网 SSH 隧道编排、旧网关规则片段、失效 draw/read 反代导出和旧单机安装器。Glance 只保留当前入口递归引用的组件。历史配置可从 Git 查找。
 
