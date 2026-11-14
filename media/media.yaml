@@ -137,6 +137,25 @@ services:
       read_only: true
       bind:
         create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/sqlite-batch.py
+      target: /app/wanted_search/batch.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/sqlite-providers.py
+      target: /app/db/providers.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/sqlite-base.py
+      target: /app/db/repositories/base.py
+      read_only: true
+      bind:
+        create_host_path: false
+
   emby:
     container_name: media-emby
     environment:
@@ -171,6 +190,16 @@ services:
       source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media
       target: /media
       read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/番剧
+      target: /media/番剧
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/剧场版
+      target: /media/剧场版
       bind:
         create_host_path: false
 networks:

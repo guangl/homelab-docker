@@ -10,3 +10,7 @@
       url: http://192.168.10.4:3003
       check-url: http://192.168.10.4:3003/ping
       icon: mdi:brain
+    - title: AdGuard Home
+      url: https://adguard.guangluo.top
+      check-url: http://192.168.10.4:6200
+      icon: si:adguard

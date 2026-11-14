@@ -1,0 +1,324 @@
+"""Provider cache and statistics database operations -- delegating to SQLAlchemy repository."""
+
+import logging
+from datetime import datetime
+
+from db.activity import log_activity
+from db.models.activity import EVENT_DOWNLOAD, EVENT_TRANSLATE
+from db.repositories.providers import ProviderRepository
+
+logger = logging.getLogger(__name__)
+
+_repo = None
+
+
+def _get_repo():
+    global _repo
+    if _repo is None:
+        _repo = ProviderRepository()
+    return _repo
+
+
+# ---- Provider Cache ----
+
+
+def cache_provider_results(
+    provider_name: str,
+    query_hash: str,
+    results_json: str,
+    ttl_hours: int = 6,
+    format_filter: str = None,
+):
+    """Cache provider search results."""
+    return _get_repo().cache_provider_results(
+        provider_name, query_hash, results_json, ttl_hours, format_filter
+    )
+
+
+def get_cached_results(
+    provider_name: str, query_hash: str, format_filter: str = None
+) -> str | None:
+    """Get cached provider results if not expired."""
+    return _get_repo().get_cached_results(provider_name, query_hash, format_filter)
+
+
+def cleanup_expired_cache():
+    """Remove expired cache entries."""
+    return _get_repo().cleanup_expired_cache()
+
+
+def get_provider_cache_stats() -> dict:
+    """Get aggregated cache stats per provider (total entries, active/expired)."""
+    return _get_repo().get_provider_cache_stats()
+
+
+def get_provider_download_stats() -> dict:
+    """Get download counts per provider, broken down by format."""
+    return _get_repo().get_provider_download_stats()
+
+
+def clear_provider_cache(provider_name: str = None):
+    """Clear provider cache. If provider_name is given, only clear that provider.
+
+    Also clears the fast app cache layer (Redis or memory) so stale
+    entries are not served from the fast tier.
+    """
+    # Clear fast cache layer
+    try:
+        from db.repositories.cache import CacheRepository
+
+        prefix = f"provider:{provider_name}:" if provider_name else "provider:"
+        CacheRepository.invalidate_app_cache(prefix=prefix)
+    except Exception:
+        pass  # Non-blocking -- DB cache clear proceeds regardless
+    return _get_repo().clear_provider_cache(provider_name)
+
+
+def record_subtitle_download(
+    provider_name: str,
+    subtitle_id: str,
+    language: str,
+    fmt: str,
+    file_path: str,
+    score: int,
+    source: str = "provider",
+    upgraded_from_id: int | None = None,
+    record_stats: bool = True,
+    score_breakdown: dict | None = None,
+    subtitle_type: str = "full",
+):
+    """Record a subtitle download for history tracking.
+
+    Args:
+        source: Source type -- "provider" (default), "whisper", or "manual".
+        upgraded_from_id: DB id of the previous SubtitleDownload this one replaces.
+        record_stats: Whether to also bump ``daily_stats`` for this download.
+            Set False for synthetic/derived rows that would otherwise
+            double-count a translation already recorded elsewhere (e.g. the
+            MT provisional row recorded on top of the site subtitle's own
+            record_stat call -- see services.mt_provisional.finalize_translation).
+        score_breakdown: Per-component score points, persisted as JSON for
+            the History score tooltip.
+        subtitle_type: "full" (default) or the sidecar's modifier ("forced",
+            "hi", ...). History is keyed by (video, language), so a forced
+            download recorded as "full" would vouch for whatever main
+            ``.de.srt`` sits next to the video (track variant policy, C1).
+    """
+    # Attach the active decision log (if any) — records WHY this subtitle was
+    # chosen. Contextvar-based, so callers outside a wanted-search run
+    # (manual upload, whisper, ...) simply get None here.
+    _decision_json = None
+    try:
+        import decision_log as _decision_log
+
+        _decision_json = _decision_log.snapshot_json()
+    except Exception:
+        logger.debug("Decision log snapshot unavailable", exc_info=True)
+
+    result = _get_repo().record_subtitle_download(
+        provider_name,
+        subtitle_id,
+        language,
+        fmt,
+        file_path,
+        score,
+        source=source,
+        upgraded_from_id=upgraded_from_id,
+        score_breakdown=score_breakdown,
+        decision_log_json=_decision_json,
+        subtitle_type=subtitle_type,
+    )
+    # Machine-translation rows get their own History category instead of
+    # being lumped under Downloads (bug found 2026-07-08) -- every other
+    # source (provider, manual, whisper, combined) still reads as a download.
+    event_type = EVENT_TRANSLATE if source == "machine_translation" else EVENT_DOWNLOAD
+    log_activity(
+        event_type,
+        file_path=file_path,
+        status="success",
+        details={"provider": provider_name, "language": language, "format": fmt, "score": score},
+    )
+    # Also record in daily_stats so the Statistics page shows provider downloads
+    if record_stats:
+        try:
+            from db.jobs import record_stat
+
+            record_stat(success=True, fmt=fmt, source=provider_name)
+        except Exception:
+            logger.debug("Could not record download in daily_stats", exc_info=True)
+    # Advisory AI quality spot-check of the saved sidecar (no-op unless
+    # ai_quality_enabled; runs in the background pool; never raises).
+    try:
+        from services.ai_quality import maybe_queue_analysis
+
+        maybe_queue_analysis(file_path, language, fmt)
+    except Exception:
+        logger.debug("Could not queue AI quality analysis", exc_info=True)
+    return result
+
+
+def list_machine_translations() -> list[tuple[str, str, str]]:
+    """``(video path, language, format)`` of every recorded machine translation."""
+    return _get_repo().list_machine_translations()
+
+
+def delete_machine_translation_records(video_path: str, language: str, fmt: str) -> int:
+    """Forget the machine-translation rows for one sidecar; return how many went."""
+    return _get_repo().delete_machine_translation_records(video_path, language, fmt)
+
+
+def get_machine_translation_sidecars(video_path: str) -> list[tuple[str, str]]:
+    """``(language, format)`` of every machine translation recorded for this video."""
+    return _get_repo().get_machine_translation_sidecars(video_path)
+
+
+def get_machine_translation_formats(video_path: str, language: str) -> list[str]:
+    """Formats of the machine translations recorded for this video and language."""
+    return _get_repo().get_machine_translation_formats(video_path, language)
+
+
+def get_latest_download_id(file_path: str) -> int | None:
+    """Return the DB id of the most recent download for this file path."""
+    return _get_repo().get_latest_download_id(file_path)
+
+
+def get_download_decision_log(download_id: int) -> str | None:
+    """Return the raw decision-log JSON for a download row, or None."""
+    return _get_repo().get_decision_log(download_id)
+
+
+def is_machine_translated(file_path: str, language: str = "", fmt: str = "") -> bool:
+    """Whether the subtitle serving this video in this language is our own.
+
+    A machine translation is the last resort, never the best available subtitle,
+    so callers must not treat one as a finished result. ``fmt`` narrows it to
+    the file of that format. Fails safe to False.
+    """
+    try:
+        return _get_repo().is_machine_translated(file_path, language, fmt)
+    except Exception:  # noqa: BLE001 — provenance is advisory; never break a scan
+        logger.debug("is_machine_translated failed for %s", file_path, exc_info=True)
+        return False
+
+
+# ---- Provider Statistics ----
+
+
+def update_provider_stats(
+    provider_name: str,
+    success: bool,
+    score: int = 0,
+    response_time_ms: float = None,
+    had_results: bool | None = None,
+    failure_kind: str | None = None,
+):
+    """Update provider statistics after a search/download attempt.
+
+    ``success`` and ``had_results`` are separate axes — see
+    ``ProviderRepository.record_search``.
+    """
+    from flask import current_app
+    from sqlalchemy.exc import OperationalError
+
+    # A telemetry write must neither flush nor invalidate the search's session.
+    app = current_app._get_current_object()
+    try:
+        with app.app_context(), _get_repo().batch():
+            _get_repo().record_search(
+                provider_name, success, response_time_ms, had_results, failure_kind
+            )
+            if success and score > 0:
+                _get_repo().record_download(provider_name, score)
+    except OperationalError as exc:
+        if "database is locked" not in str(exc.orig).lower():
+            raise
+        logger.warning("Skipped statistics for %s while SQLite was busy", provider_name)
+
+
+def record_search(
+    provider_name: str,
+    success: bool,
+    response_time_ms: float = None,
+    had_results: bool | None = None,
+    failure_kind: str | None = None,
+):
+    """Record a search attempt."""
+    return _get_repo().record_search(
+        provider_name, success, response_time_ms, had_results, failure_kind
+    )
+
+
+def record_download(provider_name: str, score: int):
+    """Record a successful download."""
+    return _get_repo().record_download(provider_name, score)
+
+
+def record_download_failure(provider_name: str):
+    """Record a failed download attempt."""
+    return _get_repo().record_download_failure(provider_name)
+
+
+def get_provider_stats(provider_name: str = None) -> dict:
+    """Get provider statistics."""
+    return _get_repo().get_provider_stats(provider_name)
+
+
+def get_all_provider_stats() -> list:
+    """Get all provider stats as a list of dicts."""
+    return _get_repo().get_all_provider_stats()
+
+
+def clear_provider_stats(provider_name: str) -> bool:
+    """Clear stats for a specific provider. Returns True if deleted."""
+    return _get_repo().clear_provider_stats(provider_name)
+
+
+# ---- Auto-disable ----
+
+
+def auto_disable_provider(provider_name: str, cooldown_minutes: int = 30):
+    """Auto-disable a provider with a cooldown period."""
+    return _get_repo().auto_disable_provider(provider_name, cooldown_minutes)
+
+
+def is_provider_auto_disabled(provider_name: str, now: datetime | None = None) -> bool:
+    """Check if a provider is currently auto-disabled.
+
+    ``now`` is injectable for callers that evaluate against a fixed clock
+    (the degradation check); it defaults to the current time.
+    """
+    return _get_repo().is_auto_disabled(provider_name, now=now)
+
+
+def clear_auto_disable(provider_name: str):
+    """Manually clear the auto-disable flag for a provider."""
+    return _get_repo().clear_auto_disable(provider_name)
+
+
+def check_auto_disable(provider_name: str, threshold: int) -> bool:
+    """Check if consecutive_failures >= threshold. If so, auto-disable."""
+    return _get_repo().check_auto_disable(provider_name, threshold)
+
+
+def get_disabled_providers() -> list:
+    """Get all currently auto-disabled providers."""
+    return _get_repo().get_disabled_providers()
+
+
+def get_provider_health_history(provider_name: str = None, days: int = 7) -> list:
+    """Get provider health history as daily aggregates."""
+    return _get_repo().get_provider_health_history(provider_name, days)
+
+
+def get_provider_success_rate(provider_name: str) -> float:
+    """Get success rate for a provider (0.0 to 1.0)."""
+    return _get_repo().get_provider_success_rate(provider_name)
+
+
+def get_all_provider_stats_enriched() -> dict:
+    """Fetch all provider stats with success_rate and auto_disabled in one query.
+
+    Replaces the N+1 pattern (get_provider_success_rate + is_provider_auto_disabled
+    per provider) in the /providers/stats route.
+    """
+    return _get_repo().get_all_provider_stats_enriched()
