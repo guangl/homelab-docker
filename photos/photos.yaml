@@ -87,7 +87,7 @@ services:
       NODE_OPTIONS: --max-old-space-size=4096
       REDIS_HOSTNAME: immich-redis
       TZ: Asia/Shanghai
-    image: ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6
+    image: ghcr.io/immich-app/immich-server@sha256:7c489add298fc2f92cda4c777de6462aa206877e04087b815f62c7664af0b53b
     networks:
       homelab_application_default: null
     ports:
