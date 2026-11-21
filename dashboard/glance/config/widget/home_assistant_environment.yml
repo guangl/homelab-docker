@@ -1,0 +1,50 @@
+- type: custom-api
+  title: 室内环境
+  cache: 1m
+  options:
+    token: "${HOME_ASSISTANT_TOKEN}"
+    rooms:
+      - name: 客厅
+        path: living
+        temperature: sensor.xiaomi_cn_blt_3_1kj4gsfm4kc01_mini_temperature_p_2_1001
+        humidity: sensor.xiaomi_cn_blt_3_1kj4gsfm4kc01_mini_relative_humidity_p_2_1002
+      - name: 卧室
+        path: bedroom
+        temperature: sensor.miaomiaoc_cn_blt_3_1m85b74q44s00_t9_temperature_p_3_1001
+        humidity: sensor.miaomiaoc_cn_blt_3_1m85b74q44s00_t9_relative_humidity_p_3_1002
+      - name: 书房
+        path: study
+        temperature: sensor.miaomiaoc_cn_blt_3_1m85aq4m84c00_t9_temperature_p_3_1001
+        humidity: sensor.miaomiaoc_cn_blt_3_1m85aq4m84c00_t9_relative_humidity_p_3_1002
+  template: |-
+    {{ $dashboard := "https://ha.guangluo.top/family-home/" }}
+    {{ $number := `^-?[0-9]+(\.[0-9]+)?$` }}
+    <div class="home-assistant-panel home-assistant-environment">
+      {{ with .Options.StringOr "token" "" }}
+        {{ $response := newRequest "https://ha.guangluo.top/api/states" | withHeader "Authorization" (concat "Bearer " .) | getResponse }}
+        {{ if eq $response.Response.StatusCode 200 }}
+          {{ $syncedAt := now }}
+          <p class="home-assistant-sync" data-online><time datetime="{{ $syncedAt | formatTime "rfc3339" }}">{{ $syncedAt | formatTime "15:04" }}</time> 已同步</p>
+          <div class="home-assistant-grid">
+            {{ range $.Options.rooms }}
+              {{ $temperature := $response.JSON.String (printf "#(entity_id==%q).state" .temperature) | findMatch $number }}
+              {{ $humidity := $response.JSON.String (printf "#(entity_id==%q).state" .humidity) | findMatch $number }}
+              <a class="home-assistant-tile home-assistant-room" href="{{ $dashboard }}{{ .path }}">
+                <span class="home-assistant-label">{{ .name }}</span>
+                <strong class="home-assistant-reading">{{ if $temperature }}{{ $temperature }} <small>°C</small>{{ else }}—{{ end }}</strong>
+                <span class="home-assistant-detail">湿度 {{ if $humidity }}{{ $humidity }}%{{ else }}—{{ end }}</span>
+                {{ if $humidity }}<meter class="home-assistant-humidity" min="0" max="100" value="{{ $humidity }}" aria-hidden="true"></meter>{{ end }}
+              </a>
+            {{ end }}
+          </div>
+        {{ else }}
+          <p class="home-assistant-sync">暂时无法读取室内数据</p>
+        {{ end }}
+      {{ else }}
+        <p class="home-assistant-sync">尚未配置数据连接</p>
+      {{ end }}
+      <nav class="home-assistant-links" aria-label="房间快捷入口">
+        <a href="{{ $dashboard }}classic">全部房间</a>
+        <a href="{{ $dashboard }}space">全屋 3D</a>
+      </nav>
+    </div>

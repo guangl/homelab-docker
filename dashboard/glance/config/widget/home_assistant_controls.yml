@@ -1,0 +1,16 @@
+- type: html
+  source: |
+    <section class="widget ha-controls" aria-labelledby="ha-controls-title">
+      <div class="widget-header"><h2 id="ha-controls-title">设备控制</h2></div>
+      <div class="widget-content">
+        <div class="ha-control-bar">
+          <p class="ha-controls-status" data-control-status role="status">可在家庭面板操作设备。</p>
+          <div class="ha-controls-actions">
+            <button type="button" data-connect hidden>连接 Home Assistant</button>
+            <button type="button" data-disconnect hidden>解除连接</button>
+            <a class="color-primary" href="https://ha.guangluo.top/family-home/overview">家庭面板 ↗</a>
+          </div>
+        </div>
+        <div class="ha-control-grid" data-control-grid hidden></div>
+      </div>
+    </section>

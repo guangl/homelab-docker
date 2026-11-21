@@ -1,0 +1,13 @@
+- name: 智能家居
+  slug: smart-home
+  show-mobile-header: true
+  columns:
+    - size: small
+      widgets:
+        - $include: widget/home_assistant_environment.yml
+    - size: full
+      widgets:
+        - $include: widget/home_assistant_controls.yml
+    - size: small
+      widgets:
+        - $include: widget/home_assistant_energy.yml
