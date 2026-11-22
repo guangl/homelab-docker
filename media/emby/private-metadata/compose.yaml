@@ -1,0 +1,49 @@
+name: private-metadata
+services:
+  worker:
+    container_name: media-private-metadata
+    image: homelab/private-metadata:20261122-catalog-names
+    pull_policy: never
+    entrypoint: [python, -u, -m, javlibrarian.worker]
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1536m
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,size=64m
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "2"
+    networks: [media]
+    volumes:
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/.private-video
+        target: /private
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/emby-key
+        target: /run/secrets/emby-key
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/translation-model
+        target: /opt/translation-model
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/portraits/portraits.py
+        target: /opt/private-metadata/portraits.py
+        read_only: true
+        bind:
+          create_host_path: false
+networks:
+  media:
+    external: true
+    name: homelab_application_default

@@ -1,0 +1,117 @@
+name: homeassistant
+services:
+  postgres-link:
+    container_name: homeassistant-postgres-link
+    image: python@sha256:7fbad8e4652eae0186429a6f26cf5b23e27e8c6fd7ac4d0cfd7a6988cdeea1e1
+    entrypoint: [python3, /opt/postgres_link.py]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    mem_limit: 64m
+    ports:
+      - 127.0.0.1:15432:5432
+    networks: [immich-database-network]
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/postgres_link.py
+        target: /opt/postgres_link.py
+        read_only: true
+        bind:
+          create_host_path: false
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "2"
+  xiaomi-oauth-mdns:
+    container_name: homeassistant-mdns
+    image: ghcr.io/home-assistant/home-assistant:2026.11.2
+    entrypoint: [python3, /opt/mdns_alias.py]
+    network_mode: host
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    mem_limit: 128m
+    environment:
+      HA_HOST_IP: ${HA_HOST_IP:-192.168.10.5}
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/mdns_alias.py
+        target: /opt/mdns_alias.py
+        read_only: true
+        bind:
+          create_host_path: false
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    logging:
+      driver: json-file
+      options:
+        max-size: 1m
+        max-file: "2"
+  go2rtc-c700:
+    container_name: go2rtc-c700
+    image: ghcr.io/alexxit/go2rtc@sha256:e098de5c2f8040dc3d4784ed2d5cfdac3b0979f9349afe587ef6a670a14b9f4d
+    command: [/config/go2rtc-ptz-d0e26d1633a9, -config, /config/go2rtc.yaml]
+    network_mode: host
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/go2rtc
+        target: /config
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/go2rtc/go2rtc-ptz-d0e26d1633a9
+        target: /config/go2rtc-ptz-d0e26d1633a9
+        read_only: true
+        bind:
+          create_host_path: false
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:2026.11.2
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 60s
+    depends_on: [postgres-link]
+    environment:
+      TZ: Asia/Shanghai
+      HA_HOST_IP: ${HA_HOST_IP:-192.168.10.5}
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/config
+        target: /config
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 2g
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import os, urllib.request; urllib.request.urlopen('http://' + os.environ['HA_HOST_IP'] + ':8123/manifest.json', timeout=8).read()"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+networks:
+  immich-database-network:
+    external: true
+    name: homelab_application_default

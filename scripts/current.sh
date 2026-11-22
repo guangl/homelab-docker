@@ -35,7 +35,10 @@ case "$HOST" in
   nas)
     FILES=(
       photos/photos.yaml
+      homeassistant/compose.yaml
       media/media.yaml
+      collect-metadata/compose.yaml
+      media/emby/private-metadata/compose.yaml
       notification/notification.yaml
       monitoring/monitoring.yaml
       automation/automation.yaml
@@ -46,6 +49,7 @@ case "$HOST" in
   macmini)
     FILES=(
       macmini/network.yaml
+      macmini/collect-metadata.yaml
       macmini/npm.yaml
       macmini/immich-ml.yaml
     )
@@ -99,21 +103,21 @@ compose() {
 }
 
 check_config() {
-  local file networks all_networks='' network
+  local file requirements all_requirements='' type name
   for file in "${FILES[@]}"; do
     printf '检查 %s\n' "$file"
     # Parse through Compose itself to resolve interpolation without sourcing .env.
-    networks=$(compose "$file" config --format json |
-      python3 "$ROOT/scripts/validate-mounts.py" --print-networks) ||
+    requirements=$(compose "$file" config --format json |
+      python3 "$ROOT/scripts/validate-mounts.py" --print-requirements) ||
       fail "编排或挂载检查失败：$file"
-    all_networks+=$'\n'"$networks"
+    all_requirements+=$'\n'"$requirements"
   done
 
-  while IFS= read -r network; do
-    [[ -n "$network" ]] || continue
-    docker network inspect "$network" >/dev/null ||
-      fail "外部网络不可用：$network。请核对 docs/restore.md。"
-  done < <(printf '%s\n' "$all_networks" | LC_ALL=C sort -u)
+  while read -r type name; do
+    [[ -n "$type" ]] || continue
+    docker "$type" inspect "$name" >/dev/null ||
+      fail "缺少 Compose 依赖 $type $name。请核对 docs/restore.md。"
+  done < <(printf '%s\n' "$all_requirements" | LC_ALL=C sort -u)
 }
 
 check_config
