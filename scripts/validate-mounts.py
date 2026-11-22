@@ -13,7 +13,6 @@ DIRECTORY_CONFIGS = {
     '/app': 'server.py',
 }
 CONTAINER_CONFIGS = {
-    'phone-notification-router': 'router.json',
     'homeassistant': 'configuration.yaml',
     'go2rtc-c700': 'go2rtc.yaml',
     'ani-rss': 'config.v2.json',

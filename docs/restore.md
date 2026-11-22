@@ -11,7 +11,7 @@
 | media/emby/private-metadata/compose.yaml | media-private-metadata | private-metadata |
 | dashboard/dashboard.yaml | glance | homelab_maintenance |
 | monitoring/monitoring.yaml | glances、uptime-kuma | homelab_maintenance |
-| notification/notification.yaml | apprise、phone-notification-router | homelab_maintenance |
+| notification/notification.yaml | apprise | homelab_maintenance |
 | automation/automation.yaml | watchtower | homelab_maintenance |
 | media/workflow/media-arrival-status/status.yaml | media-arrival-status | homelab_media_status |
 | macmini/network.yaml | adguardhome、smartdns | homelab_network |
@@ -25,14 +25,16 @@
 
 1. 复制根 `.env.example` 为 `.env`，权限设为 `600`，填写所有实际参数。原有 `.env` 不自动重写；更新时需补齐 `DNS_ROOT`、`APPRISE_USER`、`EMBY_API_KEY`、`IMMICH_API_KEY`、`UNIFI_API_KEY` 等当前字段。Glance 已统一使用根 `.env` 和 `EMBY_API_KEY`，不再使用旧 `dashboard/.env.glance`。
 2. 恢复 NAS `HOMELAB_ROOT`（默认 `/volume1/docker/homelab`）及 `MEDIA_ROOT`。将 `photos/templates/immich/postgresql.conf` 复制到 `HOMELAB_ROOT/photos/immich/postgresql.conf`，将 `notification/templates/` 的内容复制到 `HOMELAB_ROOT/notification/`。`media/workflow/` 中的服务脚本与补丁、`dashboard/glance/config/` 按相对路径复制到 `HOMELAB_ROOT`。保留已有配置，不能直接覆盖现网文件。
-3. NAS 私有模板去掉 `.example` 后恢复真实参数：`media/templates/ani-rss/config.v2.json.example` → `media/ani-rss/config.v2.json`、`media/templates/qbittorrent/qBittorrent.conf.example` → `media/qbittorrent/config/qBittorrent.conf`、`notification/templates/phone-routing/router.json.example` → `notification/phone-routing/router.json`。通知目标、登录信息、API key、token 均需自己的备份；qB 登录密码 hash 不能填明文密码。
+3. NAS 私有模板去掉 `.example` 后恢复真实参数：`media/templates/ani-rss/config.v2.json.example` → `media/ani-rss/config.v2.json`、`media/templates/qbittorrent/qBittorrent.conf.example` → `media/qbittorrent/config/qBittorrent.conf`。通知目标、登录信息、API key、token 均需自己的备份；qB 登录密码 hash 不能填明文密码。
 4. 从私有备份恢复 Emby、Sublarr、Ani-RSS、qBittorrent、Kuma、Apprise 的配置/数据库，以及 `photos/immich/data` 和 `photos/immich/postgres`。`DB_PASSWORD` 必须与现有数据库一致。不要对运行中的数据库目录作普通文件复制来代替一致性备份。
 5. Sublarr 将 `media/workflow/sublarr-overrides/` 中的 Python 补丁逐个挂载到容器，完整清单以 `media/media.yaml` 为准。不要省略补丁挂载或未经验证替换镜像。数据库非 root entrypoint、PostgreSQL 配置及 tmpfs 也按现网保留。
 6. Mac mini 恢复 `DNS_ROOT`（默认 `/Users/guang/dsh-data/homelab-migrate/network`）。把 `network/templates/` 的内容放到 `DNS_ROOT`，AdGuardHome.yaml.example、smartdns.conf.example 去掉后缀。填写 AdGuard bcrypt 密码 hash 和私有代理入口 bootstrap 域名；未使用的 bootstrap 行可删除，不能保留 `REPLACE_`。DNS 对外由 AdGuard 在 Mac mini 提供，SmartDNS 监听 `127.0.0.1:6053`。host 网络依赖当前 OrbStack 能力，迁移到其他运行时需重新核对。
 7. Mac mini 恢复 `NPM_ROOT/data/nginx-proxy-manager/{data,letsencrypt}` 和 `ML_ROOT/model-cache`。`macmini/npm-proxy-hosts.json` 是当前启用路由的参考导出，已排除失效 draw/read，不是 NPM 数据库备份；没有数据库/证书备份时需重建规则和证书。
 8. 媒体状态服务监听容器内部 `7099`，只读挂载 `media/workflow/media-arrival-state` 与 `media/workflow/media-arrival-status`。需恢复宿主工作流和状态记录；`server.py` 仅展示状态，不生成任务。`media/workflow/media-arrival-tools/` 保留 main 上的宿主媒体脚本；宿主任务调度、密钥、状态历史仍需私有备份恢复。
 
-权限按服务要求恢复。应用常用 NAS `1026:100`；qBittorrent 仍是 `0:0`，Sublarr 使用镜像默认 root，手机通知路由需要 `NET_RAW`。不要全局递归 chown。所有 bind mount 禁止自动创建路径，缺项时检查脚本会停止。
+通过私有备份恢复 Apprise 的持久化 `nas` 配置。保留现有 `email` 标签，并把目标设为 Telegram。Ani-RSS、Uptime Kuma 和 Watchtower 继续经 `/notify/nas` 发送。
+
+权限按服务要求恢复。应用常用 NAS `1026:100`；qBittorrent 仍是 `0:0`，Sublarr 使用镜像默认 root。不要全局递归 chown。所有 bind mount 禁止自动创建路径，缺项时检查脚本会停止。
 
 ### Home Assistant 和 C700
 

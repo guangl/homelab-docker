@@ -53,7 +53,7 @@
     apprise:
       icon: mdi:bell-ring-outline
       name: Apprise 通知
-      description: 多种渠道的通知推送服务
+      description: 将 NAS 告警与媒体事件发到 Telegram
       hide: false
     phone-notification-router:
       icon: mdi:cellphone-message
