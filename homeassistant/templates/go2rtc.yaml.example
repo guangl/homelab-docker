@@ -1,0 +1,15 @@
+app:
+  modules: [api, streams, rtsp, xiaomi, mp4, mjpeg, ffmpeg]
+api:
+  listen: "127.0.0.1:19841"
+rtsp:
+  listen: "127.0.0.1:18557"
+log:
+  level: info
+streams:
+  study-c700:
+    - REPLACE_STUDY_CAMERA_URL
+  living-c700:
+    - REPLACE_LIVING_CAMERA_URL
+xiaomi:
+  REPLACE_DEVICE_ID: REPLACE_XIAOMI_CREDENTIALS

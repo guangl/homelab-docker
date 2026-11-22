@@ -1,11 +1,14 @@
 # 当前拓扑恢复说明
 
-下表整理自 2026-11-06（Asia/Shanghai）的双主机只读盘点及仓库编排。恢复脚本可按仓库配置执行，使用前应确认目标主机仍需要这些服务。
+基础清单核验于 2026-11-06（Asia/Shanghai）。HA、C700 go2rtc 和 Collect Metadata 编排核验于 2026-11-22。
 
 | 主机 / 文件 | 容器 | 项目名 |
 | --- | --- | --- |
 | photos/photos.yaml | immich-server、immich-database、immich-redis | homelab_application |
+| homeassistant/compose.yaml | homeassistant、homeassistant-mdns、homeassistant-postgres-link、go2rtc-c700 | homeassistant |
 | media/media.yaml | ani-rss、qbittorrent、media-sublarr、media-emby | homelab_application |
+| collect-metadata/compose.yaml | collect-metadata-web-1、collect-metadata-metadata-translation-1 | collect-metadata |
+| media/emby/private-metadata/compose.yaml | media-private-metadata | private-metadata |
 | dashboard/dashboard.yaml | glance | homelab_maintenance |
 | monitoring/monitoring.yaml | glances、uptime-kuma | homelab_maintenance |
 | notification/notification.yaml | apprise、phone-notification-router | homelab_maintenance |
@@ -14,6 +17,7 @@
 | macmini/network.yaml | adguardhome、smartdns | homelab_network |
 | macmini/npm.yaml | nginx-proxy-manager | npm |
 | macmini/immich-ml.yaml | immich-machine-learning | immich-ml |
+| macmini/collect-metadata.yaml | collect-metadata-db-1 | collect-metadata |
 
 文件按功能目录归档，Mac mini 配置集中在 `macmini/`。同主机有多个文件共用项目名，禁止 `--remove-orphans`；NAS 与 Mac mini 不能合并到同一 Docker 主机。原实机 Compose 路径、服务名及网络见 `docs/inventory.json`。NAS 的两个 Document Viewer 容器由 DSM 套件管理，恢复套件即可，不手工创建。
 
@@ -30,12 +34,28 @@
 
 权限按服务要求恢复。应用常用 NAS `1026:100`；qBittorrent 仍是 `0:0`，Sublarr 使用镜像默认 root，手机通知路由需要 `NET_RAW`。不要全局递归 chown。所有 bind mount 禁止自动创建路径，缺项时检查脚本会停止。
 
+### Home Assistant 和 C700
+
+- 从私有备份恢复 `HOMELAB_ROOT/homeassistant/config`，包括设备配置、`secrets.yaml`、`.storage`、自定义集成和仪表盘素材。将 `homeassistant/mdns_alias.py` 和 `homeassistant/postgres_link.py` 放到 `HOMELAB_ROOT/homeassistant/`。历史数据使用 Immich PostgreSQL 实例内的 HA 专用数据库，需一并恢复其数据库及用户。HA 通过本机 `127.0.0.1:15432` 访问连接容器。
+- 从私有备份恢复 `HOMELAB_ROOT/homeassistant/go2rtc/go2rtc.yaml`，模板见 `homeassistant/templates`。将 C700 PTZ 定制二进制 `go2rtc-ptz-d0e26d1633a9` 放入同目录并保留执行权限，SHA-256 为 `2a4b5a28c0ddd290b1c92da8138f5a10f7d6a9a59aec1e7a6bae7cdf4cb5decf`。go2rtc API 和 RTSP 分别使用本机 `19841` 和 `18557` 端口。
+
+### Collect Metadata
+
+- 先在 Mac mini 恢复外部卷 `collect-metadata_postgres_data`，其中包含 PostgreSQL 数据、访问规则和服务端 TLS 配置。从 `macmini/templates/collect-metadata/db.env.example` 生成 `MACMINI_HOMELAB_ROOT/collect-metadata/db.env`，填写现有数据库密码并设为 `600`。运行中的数据库继续使用原 Docker 卷，编排位于 `MACMINI_HOMELAB_ROOT/collect-metadata/compose.yaml`。
+- 从私有备份恢复 NAS `HOMELAB_ROOT/collect-metadata/.releases/20261122-automatic-scrape/` 下的 `pg-tls`、`config`、`output` 和 `events`。恢复同一服务目录下的 `.env`、`translation/bridge.env` 和 `translation/state`。仓库提供令牌环境文件模板和当前翻译桥脚本。翻译桥读取 Sublarr 配置，其每日额度和历史保存在自己的 SQLite 文件。
+- 恢复 `HOMELAB_ROOT/media/emby/private-metadata/` 下的 `emby-key`、`translation-model` 和 `portraits/portraits.py`。Emby 与 NAS 元数据服务通过 `homelab_application_default` 通信。
+- 恢复前加载 Compose 指定的 NAS 本地镜像 `homelab/collect-metadata`、`homelab/sublarr` 和 `homelab/private-metadata` 及 Mac mini 的 `postgres:17-bookworm`。使用对应发布构建或镜像备份。Web 和 worker 的构建源码位于 Collect Metadata 项目。
+
 ## 根环境配置
 
 | 参数 | 用途 |
 | --- | --- |
 | `HOMELAB_ROOT` | NAS 上的应用数据与宿主脚本根目录。各 NAS 服务从此处挂载私有配置、数据库和支持文件。 |
 | `MEDIA_ROOT` | NAS 上的媒体根目录。媒体服务共享这个目录，Immich 另从其中挂载 `Photos`。 |
+| `HA_HOST_IP` | HA 健康检查和 Xiaomi OAuth mDNS 公布的 NAS 地址。 |
+| `METADATA_NAS_IP` | Collect Metadata Web 在 NAS 上发布端口的地址。 |
+| `METADATA_DB_HOST` | Collect Metadata Web 连接 PostgreSQL 的地址，应与 TLS 服务端证书匹配。 |
+| `MACMINI_HOMELAB_ROOT` | Mac mini 的 homelab 数据根目录，Collect Metadata PostgreSQL 从该目录读取私有环境文件。 |
 | `DNS_ROOT` | Mac mini 上存放 AdGuard Home 和 SmartDNS 配置及工作数据的目录。 |
 | `NPM_ROOT` | Mac mini 上的 Nginx Proxy Manager 根目录，编排从其下挂载代理数据和证书。 |
 | `ML_ROOT` | Mac mini 上的 Immich 机器学习根目录，其下的 `model-cache` 保存下载的模型。 |
@@ -51,6 +71,7 @@
 | `APPRISE_PASSWORD` | Apprise 对外接口的认证密码。 |
 | `WATCHTOWER_NOTIFICATION_URL` | Watchtower 报告的 Shoutrrr 发送地址，通常包含通知凭据。 |
 | `EMBY_TRANSLATION_DAILY_LIMIT` | 宿主媒体脚本每天调用远程翻译的上限，默认 100，设为 0 可关闭远程翻译。状态容器的显示上限由 `status.yaml` 内同名字段单独设置。 |
+| `METADATA_TRANSLATION_DAILY_LIMIT` | Collect Metadata 翻译桥每天处理的文本数，默认 100。 |
 
 `${变量:-默认值}` 表示变量缺失或为空时使用默认值。`${变量:?提示}` 要求变量存在且非空。路径应填写目标主机上的绝对路径。密钥与密码填在目标主机的私有 `.env` 中。
 
@@ -99,8 +120,8 @@ bash scripts/current.sh apply macmini
 ```
 
 - `plan` 按执行顺序列出编排文件，可离线运行。省略主机参数时默认使用 `nas`。
-- `check` 需要 Docker、本地 Unix 套接字、支持 `config --format json` 和 `up --wait-timeout` 的 Docker Compose，以及 Python 3。它解析编排，检查挂载路径、主要配置文件、占位符和所需外部网络。
-- `apply` 通过相同预检后先拉取全部镜像，再逐组启动，每组最多等待 600 秒，最后显示容器状态。启动某组失败时脚本停止，已启动的组继续运行。
+- `check` 需要 Docker、本地 Unix 套接字、支持 `config --format json` 和 `up --wait-timeout` 的 Docker Compose，以及 Python 3。它解析编排，检查挂载路径、主要配置文件、占位符、外部网络和卷，以及 `pull_policy: never` 指定的本机镜像。
+- `apply` 通过相同预检后拉取所需镜像，再逐组启动，每组最多等待 600 秒，最后显示容器状态。启动某组失败时脚本停止，已启动的组继续运行。
 
 不含健康检查的服务只能验证运行状态，还需核对首次登录、DNS、反代、媒体、通知和工作流。NAS Compose 保留当前服务之间实际连接的网络，恢复时不要擅自补回已断开的网络。
 

@@ -1,0 +1,122 @@
+name: collect-metadata
+services:
+  web:
+    image: homelab/collect-metadata:20261122-episode-titles-6f64364
+    pull_policy: never
+    user: "1026:100"
+    restart: unless-stopped
+    ports:
+      - "${METADATA_NAS_IP:-192.168.10.5}:18080:8080"
+    env_file:
+      - ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.env
+      - ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/bridge.env
+    environment:
+      EMBY_WRITEBACK_ROOT: /emby-media
+      EMBY_AUTO_SCRAPE_SPOOL: /run/collect-events
+      EMBY_AUTO_SCRAPE_URL: http://media-emby:8096
+      EMBY_AUTO_SCRAPE_CENTRAL_METADATA: "true"
+      EMBY_AUTO_SCRAPE_ROOTS: "/media/番剧;/media/剧场版;/media/电影;/media/电视剧"
+      EMBY_AUTO_SCRAPE_PRIVATE_ROOTS: /media/.private-video
+      PGHOST: ${METADATA_DB_HOST:-192.168.10.4}
+      PGPORT: '15433'
+      PGDATABASE: collect_metadata
+      PGUSER: collect_metadata_nas
+      PGSSLMODE: verify-full
+      PGSSLROOTCERT: /run/pg-tls/ca.crt
+      PGSSLCERT: /run/pg-tls/client.crt
+      PGSSLKEY: /run/pg-tls/client.key
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/pg-tls
+        target: /run/pg-tls
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/config
+        target: /var/lib/collect-metadata
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/output
+        target: /output
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/events
+        target: /run/collect-events
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/番剧
+        target: /emby-media/番剧
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/剧场版
+        target: /emby-media/剧场版
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/电影
+        target: /emby-media/电影
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/电视剧
+        target: /emby-media/电视剧
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/.private-video
+        target: /emby-media/.private-video
+        bind:
+          create_host_path: false
+    networks:
+      media:
+        aliases: [collect-metadata-web]
+      translation:
+  metadata-translation:
+    image: homelab/sublarr:1.18.3-pg18-client
+    pull_policy: never
+    entrypoint: [python3, -Bu, /bridge/metadata_translation_bridge.py]
+    user: "1026:100"
+    working_dir: /app
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    env_file: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/bridge.env
+    environment:
+      PYTHONPATH: /app
+      METADATA_TRANSLATION_BIND: 0.0.0.0
+      METADATA_TRANSLATION_BUDGET_DB: /state/budget.db
+      METADATA_TRANSLATION_DAILY_LIMIT: "${METADATA_TRANSLATION_DAILY_LIMIT:-100}"
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/metadata_translation_bridge.py
+        target: /bridge/metadata_translation_bridge.py
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/sublarr/config
+        target: /config
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/state
+        target: /state
+        bind:
+          create_host_path: false
+    networks: [translation]
+    healthcheck:
+      test: [CMD, python3, -c, "import socket; socket.create_connection(('127.0.0.1', 7100), 2).close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 6
+networks:
+  translation: {}
+  media:
+    name: homelab_application_default
+    external: true
