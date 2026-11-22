@@ -1,0 +1,7 @@
+{
+  "domain": "xiaomi_oauth_mdns",
+  "name": "Xiaomi OAuth mDNS alias",
+  "version": "1.0.0",
+  "dependencies": ["zeroconf"],
+  "iot_class": "local_push"
+}

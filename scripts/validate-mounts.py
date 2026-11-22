@@ -13,7 +13,6 @@ DIRECTORY_CONFIGS = {
     '/app': 'server.py',
 }
 CONTAINER_CONFIGS = {
-    'phone-notification-router': 'router.json',
     'ani-rss': 'config.v2.json',
     'qbittorrent': 'qBittorrent.conf',
 }

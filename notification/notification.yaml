@@ -9,7 +9,8 @@ services:
       APPRISE_PASSWORD: ${APPRISE_PASSWORD:?请在根 .env 中设置 APPRISE_PASSWORD}
       APPRISE_USER: ${APPRISE_USER:?请在根 .env 中设置 APPRISE_USER}
       TZ: Asia/Shanghai
-    image: caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5
+    image: caronc/apprise@sha256:bd7dc73b75882326b97d2963b7c3dd2a5e033df27d84c51f0090465d583fb316
+    pull_policy: never
     networks:
       homelab_application_default: null
       homelab_maintenance_default: null
@@ -41,35 +42,6 @@ services:
     - type: bind
       source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/notification/apprise/server-override.conf
       target: /etc/nginx/server-override.conf
-      read_only: true
-      bind:
-        create_host_path: false
-  phone-notification-router:
-    cap_add:
-    - NET_RAW
-    cap_drop:
-    - ALL
-    container_name: phone-notification-router
-    entrypoint:
-    - python
-    - /config/route.py
-    image: caronc/apprise@sha256:6ae97e24b3447f85f725a03ba73c6dc3a5f4b99f4273ac126de2d9b5ed6205d5
-    logging:
-      driver: json-file
-      options:
-        max-file: '2'
-        max-size: 1m
-    networks:
-      homelab_maintenance_default: null
-    read_only: true
-    restart: unless-stopped
-    security_opt:
-    - no-new-privileges:true
-    user: 0:0
-    volumes:
-    - type: bind
-      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/notification/phone-routing
-      target: /config
       read_only: true
       bind:
         create_host_path: false

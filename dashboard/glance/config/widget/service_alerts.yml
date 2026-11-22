@@ -11,6 +11,15 @@
       url: https://photo.guangluo.top
       check-url: http://192.168.10.5:6104/api/server/ping
       icon: si:immich
+    - title: Home Assistant
+      url: https://ha.guangluo.top/family-home/overview
+      check-url: https://ha.guangluo.top/manifest.json
+      icon: si:homeassistant
+    - title: Collect Metadata
+      url: http://192.168.10.5:18080/
+      check-url: http://192.168.10.5:18080/readyz
+      alt-status-codes: [204]
+      icon: mdi:movie-search-outline
     - title: 动漫订阅
       url: https://anime.guangluo.top
       check-url: http://192.168.10.5:6101
@@ -31,15 +40,15 @@
       url: https://adguard.guangluo.top
       check-url: http://192.168.10.4:6200
       icon: si:adguard
-    - title: Nginx Proxy Manager
-      url: https://nginx.guangluo.top
-      check-url: http://192.168.10.4:7001
+    - title: NAS 应用反向代理
+      url: https://home.guangluo.top
+      check-url: https://home.guangluo.top
       icon: mdi:server-network
     - title: Immich 机器学习
       url: http://192.168.10.4:3003
       check-url: http://192.168.10.4:3003/ping
       icon: si:immich
-    - title: 元数据翻译
+    - title: 番剧补全状态
       url: https://home.guangluo.top/homelab
-      check-url: http://media-arrival-status:7099/healthz
+      check-url: http://collect-metadata-status:7099/healthz
       icon: mdi:translate

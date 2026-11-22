@@ -28,6 +28,18 @@
       url: https://photo.guangluo.top
       icon: si:immich
       hide: false
+    homeassistant:
+      name: Home Assistant
+      description: 家庭设备、自动化、用电监测与摄像头
+      url: https://ha.guangluo.top/family-home/overview
+      icon: si:homeassistant
+      hide: false
+    collect-metadata-web-1:
+      name: Collect Metadata
+      description: 影视元数据检索、Emby 同步与私有媒体入库
+      url: http://192.168.10.5:18080/
+      icon: mdi:movie-search-outline
+      hide: false
     glances:
       name: Glances
       description: NAS 资源监控
@@ -53,17 +65,12 @@
     apprise:
       icon: mdi:bell-ring-outline
       name: Apprise 通知
-      description: 多种渠道的通知推送服务
-      hide: false
-    phone-notification-router:
-      icon: mdi:cellphone-message
-      name: 手机通知路由
-      description: 把系统与容器告警转发到手机
+      description: 将 NAS 告警与媒体事件发到 Telegram
       hide: false
     media-sublarr:
       icon: mdi:subtitles-outline
       name: Sublarr 字幕
-      description: 剧集字幕自动搜索与下载
+      description: 剧集字幕搜索、下载与元数据翻译
       hide: false
     immich-database:
       icon: si:postgresql

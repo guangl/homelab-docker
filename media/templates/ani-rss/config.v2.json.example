@@ -155,7 +155,7 @@
       "openListUploadOvaPath": "/115/Media/剧场版/${title}",
       "openListUploadDeleteLocalFile": false,
       "openListUploadDeleteOldEpisode": false,
-      "barkServerUrl": "REPLACE_BARK_URL",
+      "barkServerUrl": "",
       "barkDeviceKeys": [],
       "barkGroup": "ani-rss",
       "barkUseMarkdown": false,

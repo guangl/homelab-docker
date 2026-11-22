@@ -39,7 +39,6 @@ case "$HOST" in
       notification/notification.yaml
       monitoring/monitoring.yaml
       automation/automation.yaml
-      media/workflow/media-arrival-status/status.yaml
       dashboard/dashboard.yaml
     )
     ;;

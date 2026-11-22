@@ -10,6 +10,15 @@
       url: https://photo.guangluo.top
       check-url: http://192.168.10.5:6104/api/server/ping
       icon: si:immich
+    - title: Home Assistant
+      url: https://ha.guangluo.top/family-home/overview
+      check-url: https://ha.guangluo.top/manifest.json
+      icon: si:homeassistant
+    - title: Collect Metadata
+      url: http://192.168.10.5:18080/
+      check-url: http://192.168.10.5:18080/readyz
+      alt-status-codes: [204]
+      icon: mdi:movie-search-outline
     - title: 动漫订阅
       url: https://anime.guangluo.top
       check-url: http://192.168.10.5:6101

@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv sh
+set -eu
+cd /opt/go2rtc-c700
+exec ./go2rtc-ptz-d0e26d1633a9 -config ./go2rtc.yaml

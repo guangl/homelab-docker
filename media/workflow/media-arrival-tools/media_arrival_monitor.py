@@ -15,6 +15,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 from media_notifications import Outbox, atomic_json, http_sender
+from media_repair_gateway import publish_status, translate as translate_with_gateway, write_metadata
+from tmdb_credentials import tmdb_request
 
 RUNTIME = Path('/volume1/docker/homelab/media/workflow')
 STATE = RUNTIME / 'media-arrival-state'
@@ -23,8 +25,6 @@ EMBY_CONFIG = Path('/volume1/docker/homelab/media/emby/config')
 ENV_FILE = Path('/volume1/docker/homelab/.env')
 DOCKER = '/usr/local/bin/docker'
 FIELDS = 'Path,Overview,ProviderIds,Genres,People,Studios,Tags,ProductionLocations,OriginalTitle,SortName,PremiereDate,DateCreated,Taglines,IndexNumber,ParentIndexNumber,SeriesId'
-TMDB_API_KEY = 'f6bd687ffa63cd282b6ff2c6877f2669'
-TMDB = 'https://api.themoviedb.org/3'
 PLACEHOLDER = re.compile(r'^第\s*[0-9０-９]+\s*[集话話]$')
 FILENAME_TITLE = re.compile(r' S\d+E\d+$')
 
@@ -40,14 +40,9 @@ def placeholder(title):
 
 
 def reserve_translation(journal, day, save):
-    """Durable conservative budget: count attempts before remote LLM invocation."""
+    """Record first so a failed remote attempt is included in today's usage."""
     budget = journal.setdefault('translation_budget', {})
     used = int(budget.get(day, 0))
-    limit = translation_limit()
-    journal['translation_limit'] = limit
-    if used >= limit:
-        save(journal)
-        raise ValueError('DAILY_OVERVIEW_TRANSLATION_LIMIT')
     budget[day] = used + 1
     save(journal)
 
@@ -79,9 +74,8 @@ def title_action(item):
 def tmdb_episode_names(tmdb_id, season, episode):
     names = {}
     for lang in ('zh-CN', 'ja'):
-        url = '%s/tv/%s/season/%s/episode/%s?api_key=%s&language=%s' % (TMDB, tmdb_id, season, episode, TMDB_API_KEY, lang)
         try:
-            data = request_json(url, headers={'User-Agent': 'homelab-media-monitor'})
+            data = tmdb_request(f'tv/{tmdb_id}/season/{season}/episode/{episode}', lang, request_json)
         except Exception:
             continue
         name = (data.get('name') or '').strip() if isinstance(data, dict) else ''
@@ -126,24 +120,6 @@ def request_json(url, data=None, headers=None, opener=None):
         return json.loads(raw) if raw else None
 
 
-def translation_limit():
-    """Daily cap on remote translations; override with EMBY_TRANSLATION_DAILY_LIMIT in the root .env."""
-    raw = os.environ.get('EMBY_TRANSLATION_DAILY_LIMIT', '').strip()
-    if not raw:
-        try:
-            for line in ENV_FILE.read_text().splitlines():
-                line = line.strip()
-                if line.startswith('EMBY_TRANSLATION_DAILY_LIMIT='):
-                    raw = line.split('=', 1)[1].strip().strip('\'"')  # strip quotes
-                    break
-        except OSError:
-            raw = ''
-    try:
-        return max(0, int(raw or 100))
-    except ValueError:
-        return 100
-
-
 def emby_api_key():
     """Prefer the stable Emby API key from the homelab .env over a scraped user session token."""
     for name in ('EMBY_API_KEY', 'JELLYFIN_API_KEY'):
@@ -180,49 +156,17 @@ class Emby:
     def items(self):
         return self.api('/Items?Recursive=true&IncludeItemTypes=Series,Episode&Fields=' + FIELDS)['Items']
 
-    def update_overview(self, original, translated):
+    def update_metadata(self, original, field, translated):
         item = self.api('/Items?Ids=' + original['Id'] + '&Fields=' + FIELDS)['Items'][0]
-        if item.get('Overview') != original.get('Overview') or item.get('ProviderIds') != original.get('ProviderIds'):
+        if item.get(field) != original.get(field) or item.get('ProviderIds') != original.get('ProviderIds'):
             raise ValueError('EMBY_METADATA_CHANGED')
-        before = dict(item)
-        atomic_json(STATE / 'metadata-backups' / (item['Id'] + '-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S%f') + '.json'), before)
-        item['Overview'] = translated
-        self.api('/Items/' + item['Id'], item)
-        after = self.api('/Items?Ids=' + item['Id'] + '&Fields=' + FIELDS)['Items'][0]
-        if after.get('Overview') != translated or after.get('ProviderIds') != before.get('ProviderIds') or after.get('Name') != before.get('Name'):
-            raise ValueError('EMBY_UPDATE_VERIFY_FAILED')
-
-    def update_title(self, original, translated):
-        item = self.api('/Items?Ids=' + original['Id'] + '&Fields=' + FIELDS)['Items'][0]
-        if item.get('Name') != original.get('Name') or item.get('ProviderIds') != original.get('ProviderIds'):
-            raise ValueError('EMBY_METADATA_CHANGED')
-        before = dict(item)
-        atomic_json(STATE / 'metadata-backups' / (item['Id'] + '-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S%f') + '-title.json'), before)
-        item['Name'] = translated
-        self.api('/Items/' + item['Id'], item)
-        after = self.api('/Items?Ids=' + item['Id'] + '&Fields=' + FIELDS)['Items'][0]
-        if after.get('Name') != translated or after.get('Overview') != before.get('Overview') or after.get('ProviderIds') != before.get('ProviderIds'):
-            raise ValueError('EMBY_UPDATE_VERIFY_FAILED')
+        stamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S%f')
+        atomic_json(STATE / 'metadata-backups' / f"{item['Id']}-{stamp}-{field}.json", item)
+        return write_metadata(item, field, translated)
 
 
 def translate(text):
-    # A native backend invocation, not app startup/migrations or scheduler.
-    code = '''import sqlite3,json,logging
-logging.disable(logging.CRITICAL)
-from translation.deepseek import DeepSeekBackend
-from translation.concurrency import get_concurrency
-c=sqlite3.connect('file:/config/sublarr.db?mode=ro',uri=True)
-k=c.execute("select value from config_entries where key='backend.deepseek.api_key'").fetchone()[0]
-c.close()
-get_concurrency().register('deepseek',1)
-r=DeepSeekBackend(api_key=k,model='deepseek-chat').translate_batch(TEXT,'auto','zh')
-assert r.success and len(r.translated_lines)==1
-print(json.dumps(r.translated_lines,ensure_ascii=False))
-'''.replace('TEXT', repr([text]))
-    r = subprocess.run([DOCKER, 'exec', 'media-sublarr', 'python3', '-B', '-c', code], capture_output=True, text=True, timeout=180)
-    if r.returncode:
-        raise RuntimeError('OVERVIEW_TRANSLATION_FAILED')
-    result = json.loads(r.stdout)[0]
+    result = translate_with_gateway(text)
     if not chinese(result):
         raise ValueError('NON_CHINESE_TRANSLATION')
     return result
@@ -271,7 +215,7 @@ def run():
         config = json.loads((ANI / 'config.v2.json').read_text())
         journal_path = STATE / 'journal.json'
         journal = json.loads(journal_path.read_text()) if journal_path.exists() else {'torrents': {}, 'metadata': {}}
-        journal['translation_limit'] = translation_limit()
+        journal.pop('translation_limit', None)
         outbox = Outbox(STATE / 'outbox')
         notifications = next(n for n in config['notificationConfigList'] if n.get('notificationType') == 'WEB_HOOK' and n.get('enable'))
         headers = {k.strip(): v.strip() for k, v in (line.split(':', 1) for line in notifications['webHookHeader'].splitlines() if line.strip())}
@@ -335,8 +279,8 @@ def run():
                 # Retain translation before update so retries do not incur another LLM charge.
                 journal['metadata'][digest] = text
                 atomic_json(journal_path, journal)
-                emby.update_overview(item, text)
-                repaired += 1
+                if emby.update_metadata(item, 'Overview', text):
+                    repaired += 1
             except Exception as exc:
                 journal['retry_after'][item['Id']] = time.time() + 3600
                 errors.append({'stage': 'metadata', 'id': item['Id'], 'error': type(exc).__name__})
@@ -373,8 +317,8 @@ def run():
                     raise ValueError('TITLE_TRANSLATION_NOT_CHINESE')
                 journal['titles'][digest] = title
                 atomic_json(journal_path, journal)
-                emby.update_title(item, title)
-                titles_repaired += 1
+                if emby.update_metadata(item, 'Name', title):
+                    titles_repaired += 1
             except Exception as exc:
                 journal['retry_after'][item['Id']] = time.time() + 3600
                 errors.append({'stage': 'title', 'id': item['Id'], 'error': type(exc).__name__})
@@ -389,6 +333,7 @@ def run():
                 errors.append({'stage': 'notification', 'id': path.stem, 'error': type(exc).__name__})
         summary = {'time': datetime.datetime.now().isoformat(), 'arrival_checked': completed, 'overview_repaired': repaired, 'title_repaired': titles_repaired, 'notifications_delivered': delivered, 'errors': errors}
         atomic_json(STATE / 'last-run.json', summary)
+        publish_status(STATE)
         print(json.dumps(summary, ensure_ascii=False))
 
 if __name__ == '__main__':

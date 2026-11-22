@@ -31,6 +31,8 @@ services:
     image: ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     networks:
       homelab_application_default: null
+      homeassistant_recorder:
+        ipv4_address: 172.30.154.2
     restart: unless-stopped
     shm_size: '1073741824'
     tmpfs:
@@ -118,4 +120,7 @@ services:
 networks:
   homelab_application_default:
     name: homelab_application_default
+    external: true
+  homeassistant_recorder:
+    name: homeassistant_recorder
     external: true
