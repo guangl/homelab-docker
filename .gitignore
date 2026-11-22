@@ -5,7 +5,24 @@
 !**/.env.*.example
 
 # 运行时数据与容器配置：绑定挂载生成，不纳入版本管理
-media/emby/
+/media/emby/*
+/metadata-translation/
+collect-metadata/media-arrival/
+media/workflow/sublarr-overrides/search-one-query.py
+media/workflow/sublarr-overrides/wanted-search-process.py
+media/workflow/sublarr-overrides/mediaserver-jellyfin.py
+media/workflow/sublarr-overrides/scheduler-core.py
+homeassistant/config/
+homeassistant/go2rtc/
+homeassistant/backups/
+homeassistant/tools/
+collect-metadata/.releases/
+collect-metadata/.compose.*
+collect-metadata/.auto-scrape-compose.yaml
+collect-metadata/pg-tls/
+collect-metadata/translation/bridge.env
+collect-metadata/translation/state/
+collect-metadata/db.env
 media/ani-rss/
 media/qbittorrent/
 media/sublarr/
@@ -21,9 +38,9 @@ network/wireguard/
 network/cloud-relay/
 notification/apprise/
 notification/notify/
-notification/phone-routing/router.json
 
 # 密钥、备份与本地产物
+/.migration-backups/
 **/secrets/
 *.pem
 *.key

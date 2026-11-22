@@ -1,0 +1,52 @@
+name: homeassistant
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:2026.11.2
+    network_mode: host
+    restart: unless-stopped
+    stop_grace_period: 60s
+    environment:
+      TZ: Asia/Shanghai
+      HA_HOST_IP: ${HA_HOST_IP:-192.168.10.5}
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/config
+        target: /config
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/go2rtc
+        target: /opt/go2rtc-c700
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/homeassistant/integrations/go2rtc-c700/run
+        target: /etc/services.d/go2rtc-c700/run
+        read_only: true
+        bind:
+          create_host_path: false
+    mem_limit: 2g
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import os, urllib.request; urllib.request.urlopen('http://' + os.environ['HA_HOST_IP'] + ':8123/manifest.json', timeout=8).read()"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s

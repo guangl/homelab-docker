@@ -244,6 +244,119 @@
           "homelab_application_default",
           "homelab_maintenance_default"
         ]
+      },
+      {
+        "name": "homeassistant",
+        "image": "ghcr.io/home-assistant/home-assistant:2026.11.2",
+        "status": "running",
+        "user": "",
+        "source_compose": "/volume1/docker/homelab/homeassistant/compose.yaml",
+        "project": "homeassistant",
+        "service": "homeassistant",
+        "ports": {},
+        "networks": [
+          "host"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
+      },
+      {
+        "name": "homeassistant-mdns",
+        "image": "ghcr.io/home-assistant/home-assistant:2026.11.2",
+        "status": "running",
+        "user": "",
+        "source_compose": "/volume1/docker/homelab/homeassistant/compose.yaml",
+        "project": "homeassistant",
+        "service": "xiaomi-oauth-mdns",
+        "ports": {},
+        "networks": [
+          "host"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
+      },
+      {
+        "name": "homeassistant-postgres-link",
+        "image": "python@sha256:7fbad8e4652eae0186429a6f26cf5b23e27e8c6fd7ac4d0cfd7a6988cdeea1e1",
+        "status": "running",
+        "user": "",
+        "source_compose": "/volume1/docker/homelab/homeassistant/compose.yaml",
+        "project": "homeassistant",
+        "service": "postgres-link",
+        "ports": {
+          "5432/tcp": [
+            {
+              "HostIp": "127.0.0.1",
+              "HostPort": "15432"
+            }
+          ]
+        },
+        "networks": [
+          "homelab_application_default"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
+      },
+      {
+        "name": "go2rtc-c700",
+        "image": "ghcr.io/alexxit/go2rtc@sha256:e098de5c2f8040dc3d4784ed2d5cfdac3b0979f9349afe587ef6a670a14b9f4d",
+        "status": "running",
+        "user": "",
+        "source_compose": "/volume1/docker/homelab/homeassistant/compose.yaml",
+        "project": "homeassistant",
+        "service": "go2rtc-c700",
+        "ports": {},
+        "networks": [
+          "host"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
+      },
+      {
+        "name": "collect-metadata-web-1",
+        "image": "homelab/collect-metadata:20261122-episode-titles-6f64364",
+        "status": "running",
+        "user": "1026:100",
+        "source_compose": "/volume1/docker/homelab/collect-metadata/compose.yaml",
+        "project": "collect-metadata",
+        "service": "web",
+        "ports": {
+          "8080/tcp": [
+            {
+              "HostIp": "192.168.10.5",
+              "HostPort": "18080"
+            }
+          ]
+        },
+        "networks": [
+          "collect-metadata_translation",
+          "homelab_application_default"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
+      },
+      {
+        "name": "collect-metadata-metadata-translation-1",
+        "image": "homelab/sublarr:1.18.3-pg18-client",
+        "status": "running",
+        "user": "1026:100",
+        "source_compose": "/volume1/docker/homelab/collect-metadata/compose.yaml",
+        "project": "collect-metadata",
+        "service": "metadata-translation",
+        "ports": {},
+        "networks": [
+          "collect-metadata_translation"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
+      },
+      {
+        "name": "media-private-metadata",
+        "image": "homelab/private-metadata:20261122-catalog-names",
+        "status": "running",
+        "user": "1026:100",
+        "source_compose": "/volume1/docker/homelab/media/emby/private-metadata/compose.yaml",
+        "project": "private-metadata",
+        "service": "worker",
+        "ports": {},
+        "networks": [
+          "homelab_application_default"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
       }
     ],
     "macmini": [
@@ -324,6 +437,27 @@
         "networks": [
           "host"
         ]
+      },
+      {
+        "name": "collect-metadata-db-1",
+        "image": "postgres:17-bookworm",
+        "status": "running",
+        "user": "",
+        "source_compose": "/Users/guang/dsh-data/homelab-migrate/collect-metadata/compose.yaml",
+        "project": "collect-metadata",
+        "service": "db",
+        "ports": {
+          "5432/tcp": [
+            {
+              "HostIp": "0.0.0.0",
+              "HostPort": "15433"
+            }
+          ]
+        },
+        "networks": [
+          "collect-metadata_default"
+        ],
+        "verified_at": "2026-11-22 Asia/Shanghai"
       }
     ]
   },

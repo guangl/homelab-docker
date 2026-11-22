@@ -1,0 +1,140 @@
+name: collect-metadata
+services:
+  web:
+    image: homelab/collect-metadata:private-worker-20261122
+    pull_policy: never
+    user: "1026:100"
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 40s
+    tmpfs:
+      - /tmp:rw,nosuid,nodev
+    ports:
+      - "${METADATA_NAS_IP:-192.168.10.5}:18080:8080"
+    env_file:
+      - ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.env
+      - ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/bridge.env
+    environment:
+      EMBY_WRITEBACK_ROOT: /emby-media
+      EMBY_AUTO_SCRAPE_SPOOL: /run/collect-events
+      EMBY_AUTO_SCRAPE_URL: http://media-emby:8096
+      EMBY_AUTO_SCRAPE_CENTRAL_METADATA: "true"
+      EMBY_AUTO_SCRAPE_ROOTS: "/media/番剧;/media/剧场版;/media/电影;/media/电视剧"
+      EMBY_AUTO_SCRAPE_TIMEZONE: Asia/Shanghai
+      EMBY_AUTO_SCRAPE_DB_SEASON_MAP: "true"
+      MEDIA_ARRIVAL_DIRECTORY: /run/media-arrival
+      PRIVATE_METADATA_TRANSLATION_URL: http://metadata-translation-shared:7100/translate
+      PRIVATE_METADATA_TRANSLATION_TOKEN_FILE: /run/secrets/synopsis-token
+      PGHOST: ${METADATA_DB_HOST:-192.168.10.4}
+      PGPORT: '15433'
+      PGDATABASE: collect_metadata
+      PGUSER: collect_metadata_nas
+      PGSSLMODE: verify-full
+      PGSSLROOTCERT: /run/pg-tls/ca.crt
+      PGSSLCERT: /run/pg-tls/client.crt
+      PGSSLKEY: /run/pg-tls/client.key
+    volumes:
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/pg-tls
+        target: /run/pg-tls
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/config
+        target: /var/lib/collect-metadata
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/output
+        target: /output
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/.releases/20261122-automatic-scrape/events
+        target: /run/collect-events
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/番剧
+        target: /emby-media/番剧
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/剧场版
+        target: /emby-media/剧场版
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/电影
+        target: /emby-media/电影
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/电视剧
+        target: /emby-media/电视剧
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/.private-video
+        target: /emby-media/.private-video
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/media-arrival
+        target: /run/media-arrival
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MEDIA_ROOT:-/volume1/homes/guangluo/entertainments}/Media/.private-video
+        target: /private
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/translation-model
+        target: /opt/translation-model
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/portraits/portraits.py
+        target: /opt/private-metadata/portraits.py
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/synopsis-translation/token
+        target: /run/secrets/synopsis-token
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/emby-key
+        target: /run/secrets/emby-key
+        read_only: true
+        bind:
+          create_host_path: false
+    networks:
+      media:
+        aliases: [collect-metadata-web]
+      translation:
+      maintenance:
+        aliases: [collect-metadata-status]
+      private_metadata_synopsis:
+networks:
+  media:
+    name: homelab_application_default
+    external: true
+  maintenance:
+    name: homelab_maintenance_default
+    external: true
+  translation:
+    name: collect-metadata_translation
+    external: true
+  private_metadata_synopsis:
+    name: private-metadata_synopsis
+    external: true

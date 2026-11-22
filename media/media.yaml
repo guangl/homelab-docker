@@ -83,18 +83,55 @@ services:
         create_host_path: false
   sublarr:
     container_name: media-sublarr
+    init: true
+    stop_grace_period: 40s
+    command:
+      - python3
+      - -Bu
+      - /bridge/sublarr_runtime.py
+      - gunicorn
+      - --bind
+      - 0.0.0.0:5765
+      - --worker-class
+      - gthread
+      - --workers
+      - "1"
+      - --threads
+      - "100"
+      - --timeout
+      - "7200"
+      - --graceful-timeout
+      - "15"
+      - --access-logfile
+      - "-"
+      - --access-logformat
+      - '%(h)s %(t)s "%(m)s %(U)s" %(s)s %(b)s %(D)sus'
+      - app:create_app()
     environment:
       PGID: '100'
       PUID: '1026'
       TZ: Asia/Shanghai
       UMASK: '022'
-    image: abrechen2/sublarr@sha256:d50a05cc127f5823934782cdc686b5cdcaee20573c7cf9eed0c5f87247e8b142
+      SUBLARR_DATABASE_URL: ${SUBLARR_DATABASE_URL:?请在根 .env 中设置 SUBLARR_DATABASE_URL}
+      PYTHONPATH: /app
+      METADATA_TRANSLATION_COLLECT_ENV_FILE: /run/secrets/metadata-translation-collect.env
+      METADATA_TRANSLATION_DOCKER_SUBNET: 172.29.0.0/16
+      METADATA_TRANSLATION_USE_SUBLARR_DB: "1"
+      METADATA_TRANSLATION_BUDGET_DB: /state/collect/budget.db
+      METADATA_TRANSLATION_PRIVATE_TOKEN_FILE: /run/secrets/synopsis-token
+      METADATA_TRANSLATION_PRIVATE_USAGE_DB: /state/private/translation.db
+      METADATA_TRANSLATION_EPISODE_TOKEN_FILE: /run/secrets/episode-token
+      METADATA_TRANSLATION_EPISODE_USAGE_DB: /state/episodes/translation.db
+    image: homelab/sublarr:1.18.3-pg18-client
+    pull_policy: never
     labels:
       com.centurylinklabs.watchtower.enable: 'false'
-    mem_limit: '1073741824'
-    memswap_limit: '1073741824'
+    mem_limit: 1280m
+    memswap_limit: 1280m
     networks:
       homelab_application_default: null
+      collect_metadata_translation:
+        aliases: [metadata-translation-shared]
     ports:
     - mode: ingress
       host_ip: 127.0.0.1
@@ -155,6 +192,69 @@ services:
       read_only: true
       bind:
         create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/search-one-query.py
+      target: /app/db/repositories/search.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/wanted-search-process.py
+      target: /app/wanted_search/process.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/mediaserver-jellyfin.py
+      target: /app/mediaserver/jellyfin.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/workflow/sublarr-overrides/scheduler-core.py
+      target: /app/services/scheduler/core.py
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/metadata-translation/sublarr-runtime
+      target: /bridge
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/bridge.env
+      target: /run/secrets/metadata-translation-collect.env
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/collect-metadata/translation/state
+      target: /state/collect
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/synopsis-translation/state
+      target: /state/private
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/media/emby/private-metadata/synopsis-translation/token
+      target: /run/secrets/synopsis-token
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/metadata-translation/episodes/state
+      target: /state/episodes
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${HOMELAB_ROOT:-/volume1/docker/homelab}/metadata-translation/episodes/token
+      target: /run/secrets/episode-token
+      read_only: true
+      bind:
+        create_host_path: false
 
   emby:
     container_name: media-emby
@@ -211,4 +311,7 @@ networks:
     external: true
   qb_direct_lan:
     name: qb_direct_lan
+    external: true
+  collect_metadata_translation:
+    name: collect-metadata_translation
     external: true

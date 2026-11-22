@@ -10,9 +10,10 @@ DIRECTORY_CONFIGS = {
     '/etc/smartdns': 'smartdns.conf',
     '/opt/adguardhome/conf': 'AdGuardHome.yaml',
     '/app/config': 'glance.yml',
-    '/app': 'server.py',
+    '/opt/go2rtc-c700': 'go2rtc.yaml',
 }
 CONTAINER_CONFIGS = {
+    'homeassistant': 'configuration.yaml',
     'ani-rss': 'config.v2.json',
     'qbittorrent': 'qBittorrent.conf',
 }
@@ -70,23 +71,29 @@ def validate(config):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--print-networks', action='store_true')
+    parser.add_argument('--print-requirements', action='store_true')
     args = parser.parse_args()
     try:
         config = json.load(sys.stdin)
         errors = validate(config)
-        networks = {
-            network.get('name', key)
-            for key, network in config.get('networks', {}).items()
-            if network.get('external')
+        requirements = {
+            (kind, resource.get('name', key))
+            for kind in ('network', 'volume')
+            for key, resource in config.get(kind + 's', {}).items()
+            if resource.get('external')
         }
+        requirements.update(
+            ('image', service['image'])
+            for service in config['services'].values()
+            if service.get('pull_policy') == 'never'
+        )
     except (KeyError, ValueError, TypeError, AttributeError, OSError):
         sys.exit('无法读取或校验 Docker Compose 解析后的配置。')
     if errors:
         sys.exit('\n'.join(sorted(errors)))
-    if args.print_networks:
-        for network in sorted(networks):
-            print(network)
+    if args.print_requirements:
+        for kind, name in sorted(requirements):
+            print(kind, name)
 
 
 if __name__ == '__main__':
