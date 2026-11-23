@@ -1,0 +1,116 @@
+{
+  "_notice": "2026-11-23 observed routes for audit/recovery; NOT a DSM import file or live backup (headers, WebSocket, TLS certificates and access rules must be backed up separately).",
+  "source": "https://github.com/guangl/blog/pull/52",
+  "observed_at": "2026-11-23",
+  "ingress": {
+    "host": "192.168.10.5",
+    "scheme": "https",
+    "port": 443,
+    "manager": "Synology DSM reverse proxy"
+  },
+  "dns": {
+    "manager": "macOS launchd AdGuard Home",
+    "rewrite_a": "192.168.10.5"
+  },
+  "routes": [
+    {
+      "hostname": "home.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 6001
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "movie.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 6100
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "anime.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 6101
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "download.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "172.30.61.2",
+        "port": 8080
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "photo.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 6104
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "top.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 6002
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "monitor.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 6003
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "adguard.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.4",
+        "port": 6200
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "nas.guangluo.top",
+      "backend": {
+        "scheme": "https",
+        "host": "192.168.10.5",
+        "port": 5001
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "ha.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 8123
+      },
+      "dns_a": "192.168.10.5"
+    },
+    {
+      "hostname": "metadata.guangluo.top",
+      "backend": {
+        "scheme": "http",
+        "host": "192.168.10.5",
+        "port": 18080
+      },
+      "dns_a": "192.168.10.5"
+    }
+  ]
+}
