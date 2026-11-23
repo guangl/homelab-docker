@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Compose and test media tasks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate NAS and Mac mini Compose files
+        shell: bash
+        run: |
+          fixture=$(mktemp -d "${RUNNER_TEMP}/homelab-ci.XXXXXX")
+          export HOMELAB_ROOT="$fixture/nas"
+          export MACMINI_HOMELAB_ROOT="$fixture/macmini"
+          mkdir -p "$HOMELAB_ROOT/collect-metadata/translation" "$MACMINI_HOMELAB_ROOT/collect-metadata"
+          cp collect-metadata/.env.example "$HOMELAB_ROOT/collect-metadata/.env"
+          cp collect-metadata/translation/bridge.env.example "$HOMELAB_ROOT/collect-metadata/translation/bridge.env"
+          cp macmini/templates/collect-metadata/db.env.example "$MACMINI_HOMELAB_ROOT/collect-metadata/db.env"
+
+          for host in nas macmini; do
+            plan=$(bash scripts/current.sh plan "$host")
+            files=$(sed -n 's/^  //p' <<< "$plan")
+            test -n "$files"
+            while IFS= read -r file; do
+              printf 'Validating %s\n' "$file"
+              docker compose --env-file .env.example -f "$file" config --quiet
+            done <<< "$files"
+          done
+      - name: Test media tasks
+        run: python3 -B -m unittest discover -s media/workflow/media-arrival-tools
