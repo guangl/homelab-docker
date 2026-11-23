@@ -74,6 +74,9 @@ ADGUARD=$'macmini/network.yaml\nmacmini/collect-metadata.yaml\nmacmini/immich-ml
 NPM=$'macmini/smartdns.yaml\nmacmini/collect-metadata.yaml\nmacmini/npm.yaml\nmacmini/immich-ml.yaml'
 BOTH=$'macmini/network.yaml\nmacmini/collect-metadata.yaml\nmacmini/npm.yaml\nmacmini/immich-ml.yaml'
 assert_plan "$DEFAULT"
+nas_plan=$(bash "$script" plan nas)
+[[ "$nas_plan" == *'homeassistant/compose.yaml'* ]]
+[[ "$nas_plan" == *'collect-metadata/compose.yaml'* ]]
 assert_plan "$ADGUARD" --legacy-adguard
 assert_plan "$NPM" --legacy-npm
 assert_plan "$BOTH" --legacy-adguard --legacy-npm
@@ -105,4 +108,4 @@ default_calls=$'smartdns.yaml config\ncollect-metadata.yaml config\nimmich-ml.ya
 legacy_calls=$'network.yaml config\ncollect-metadata.yaml config\nnpm.yaml config\nimmich-ml.yaml config\nnetwork.yaml pull\ncollect-metadata.yaml pull\nnpm.yaml pull\nimmich-ml.yaml pull\nnetwork.yaml up\ncollect-metadata.yaml up\nnpm.yaml up\nimmich-ml.yaml up\nnetwork.yaml ps\ncollect-metadata.yaml ps\nnpm.yaml ps\nimmich-ml.yaml ps'
 run_and_assert apply "$default_calls"
 run_and_assert apply "$legacy_calls" --legacy-adguard --legacy-npm
-printf 'PASS: SmartDNS parity; exact plans; invalid inputs; mocked check/default/legacy apply\n'
+printf 'PASS: SmartDNS parity; NAS/HA/Metadata, Mac mini plans; invalid inputs; mocked check/default/legacy apply\n'
