@@ -1,0 +1,40 @@
+# Current Mac mini DNS container. AdGuard Home runs natively under launchd.
+name: homelab_network
+services:
+  smartdns:
+    restart: unless-stopped
+    container_name: smartdns
+    environment:
+      TZ: CST-8
+    image: pymumu/smartdns@sha256:8db964569ae6ffc7e9f06f0a516d496c49b6dfc9b1430a2c2e64e7a66c18f1b9
+    mem_limit: '134217728'
+    network_mode: host
+    volumes:
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/smartdns/conf
+      target: /etc/smartdns
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/smartdns/conf/ca-certificates.crt
+      target: /etc/ssl/certs/ca-certificates.crt
+      read_only: true
+      bind:
+        create_host_path: false
+    - type: bind
+      source: ${DNS_ROOT:-/Users/guang/dsh-data/homelab-migrate/network}/smartdns/data
+      target: /var/lib/smartdns
+      bind:
+        create_host_path: false
+    healthcheck:
+      test:
+      - CMD
+      - nslookup
+      - -type=A
+      - home.guangluo.top
+      - 127.0.0.1:6053
+      timeout: 5s
+      interval: 30s
+      retries: 3
+      start_period: 5s

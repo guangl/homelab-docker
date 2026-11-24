@@ -6,13 +6,17 @@ ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 
 usage() {
   cat <<'USAGE'
-用法：bash scripts/current.sh plan|check|apply [nas|macmini]
+用法：bash scripts/current.sh plan|check|apply [nas|macmini] [--legacy-adguard] [--legacy-npm]
 
   plan   列出目标主机的 Compose 文件和处理顺序，无需 Docker 或 .env
   check  校验编排、挂载、私有配置及外部网络
   apply  检查通过后拉取镜像，逐组启动并显示状态
 
-主机默认是 nas。check 和 apply 请在目标 Docker 主机执行，恢复步骤见 docs/restore.md。
+主机默认是 nas。Mac mini 默认仅恢复当前 Compose 服务。
+  --legacy-adguard  显式使用旧 network.yaml（AdGuard 容器与 SmartDNS）
+  --legacy-npm      显式恢复已停用的 Nginx Proxy Manager
+旧服务选项只允许用于 macmini；可同时指定。
+check 和 apply 请在目标 Docker 主机执行，恢复步骤见 docs/restore.md。
 USAGE
 }
 
@@ -23,7 +27,21 @@ fail() {
 
 ACTION=${1:-help}
 HOST=${2:-nas}
-[[ $# -le 2 ]] || fail '参数过多，请运行 --help。'
+[[ $# -le 4 ]] || fail '参数过多，请运行 --help。'
+
+LEGACY_ADGUARD=false
+LEGACY_NPM=false
+for option in "${@:3}"; do
+  case "$option" in
+    --legacy-adguard)
+      [[ "$LEGACY_ADGUARD" == false ]] || fail "重复参数：$option"
+      LEGACY_ADGUARD=true ;;
+    --legacy-npm)
+      [[ "$LEGACY_NPM" == false ]] || fail "重复参数：$option"
+      LEGACY_NPM=true ;;
+    *) fail "未知选项：$option" ;;
+  esac
+done
 
 case "$ACTION" in
   help|--help|-h) usage; exit 0 ;;
@@ -33,6 +51,8 @@ esac
 
 case "$HOST" in
   nas)
+    [[ "$LEGACY_ADGUARD" == false && "$LEGACY_NPM" == false ]] ||
+      fail '旧服务选项仅适用于 macmini。'
     FILES=(
       photos/photos.yaml
       homeassistant/compose.yaml
@@ -45,12 +65,18 @@ case "$HOST" in
     )
     ;;
   macmini)
+    # Never start retired services as part of the default recovery.
+    if [[ "$LEGACY_ADGUARD" == true ]]; then
+      DNS_COMPOSE=macmini/network.yaml
+    else
+      DNS_COMPOSE=macmini/smartdns.yaml
+    fi
     FILES=(
-      macmini/network.yaml
+      "$DNS_COMPOSE"
       macmini/collect-metadata.yaml
-      macmini/npm.yaml
-      macmini/immich-ml.yaml
     )
+    [[ "$LEGACY_NPM" == false ]] || FILES+=(macmini/npm.yaml)
+    FILES+=(macmini/immich-ml.yaml)
     ;;
   *) fail '主机必须是 nas 或 macmini。' ;;
 esac
