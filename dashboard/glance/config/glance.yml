@@ -1,8 +1,11 @@
 branding:
   hide-footer: true
   app-name: 家庭空间
+server:
+  assets-path: /app/config/assets
 pages:
   - $include: home_page.yml
+  - $include: smart_home_page.yml
   - $include: homelab_page.yml
   - $include: development_page.yml
   - $include: photography_page.yaml
@@ -28,9 +31,6 @@ document:
     .header .logo { display: none; }
     .head-widgets { display: flex; flex-direction: column; gap: 18px; }
     .head-widgets > .widget { margin: 0; }
-    .studio-bookmarks { background: var(--color-widget-background); border: 1px solid var(--color-widget-content-border); border-radius: 18px; padding: 20px 22px; }
-    .studio-bookmarks-title { color: var(--color-text-base); font-size: 13px; font-weight: 600; letter-spacing: .03em; margin: 0 0 12px 4px; }
-    .widget-type-html:has(.studio-bookmarks) { margin-bottom: var(--widget-gap); }
     .homelab-clock [data-local-time] > .text-right { text-align: left; }
     .homelab-clock [data-local-time] > div:first-child { display: flex; align-items: baseline; gap: 8px; }
     .homelab-clock [data-year] { font-size: 12px; color: var(--color-text-subdue); }
@@ -74,7 +74,7 @@ document:
     .studio-bookmark-links a:hover { background: color-mix(in srgb, var(--color-primary) 16%, transparent); }
     .widget-type-monitor .widget-content { padding-block: 18px; }
     .widget-type-monitor > .widget-header { margin-top: 26px; }
-    .page-column > .widget-type-monitor:first-child > .widget-header { margin-top: 0; }
+    .page-column > .widget-type-monitor:first-child > .widget-header, .studio-bookmarks + .widget-type-monitor > .widget-header { margin-top: 0; }
     .studio-bookmarks a { color: var(--color-text-highlight); font-size: 14px; }
     .studio-bookmarks a:hover { color: var(--color-primary); }
     .studio-network-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
@@ -84,6 +84,69 @@ document:
     .studio-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
     .studio-metrics strong { display: block; font-size: 27px; font-weight: 550; line-height: 1.2; color: var(--color-text-highlight); font-variant-numeric: tabular-nums; }
     .studio-metrics span { display: block; font-size: 12px; color: var(--color-text-subdue); margin-top: 6px; }
+    .home-assistant-panel { --home-assistant-muted: #596761; }
+    :root[data-scheme="dark"] .home-assistant-panel { --home-assistant-muted: #a5b1ad; }
+    .home-assistant-sync { color: var(--home-assistant-muted); font-size: 12px; }
+    .home-assistant-sync[data-online]::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-inline-end: 7px; border-radius: 50%; background: var(--color-positive); vertical-align: middle; }
+    .home-assistant-grid { display: grid; gap: 8px; margin-top: 12px; }
+    .home-assistant-tile { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: baseline; gap: 2px 7px; }
+    .home-assistant-environment .home-assistant-tile { padding: 10px; border: 1px solid var(--color-widget-content-border); border-radius: 10px; }
+    .home-assistant-environment .home-assistant-tile:hover { border-color: var(--color-primary); }
+    .home-assistant-energy .home-assistant-grid { gap: 0; }
+    .home-assistant-energy .home-assistant-tile { padding-block: 9px; }
+    .home-assistant-energy .home-assistant-tile + .home-assistant-tile { border-top: 1px solid var(--color-widget-content-border); }
+    .home-assistant-tile:hover .home-assistant-label { color: var(--color-primary); }
+    .home-assistant-panel a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .home-assistant-label { color: var(--color-text-highlight); font-size: 13px; font-weight: 550; }
+    .home-assistant-reading { color: var(--color-text-highlight); font-size: 18px; line-height: 1.25; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .home-assistant-reading small { font-size: 11px; font-weight: 550; color: var(--home-assistant-muted); }
+    .home-assistant-detail { grid-column: 1 / -1; color: var(--home-assistant-muted); font-size: 12px; }
+    .home-assistant-humidity { grid-column: 1 / -1; display: block; width: 100%; height: 5px; margin-top: 4px; background: transparent; }
+    .home-assistant-humidity::-webkit-meter-bar { height: 5px; border: 0; border-radius: 5px; background: var(--color-widget-content-border); }
+    .home-assistant-humidity::-webkit-meter-optimum-value { border-radius: 5px; background: var(--color-primary); }
+    .home-assistant-humidity::-moz-meter-bar { border-radius: 5px; background: var(--color-primary); }
+    .home-assistant-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 12px; padding-top: 6px; border-top: 1px solid var(--color-widget-content-border); }
+    .home-assistant-links a { display: inline-flex; align-items: center; min-height: 30px; color: var(--color-primary); font-weight: 550; }
+    .home-assistant-links a:hover { text-decoration: underline; }
+    .ha-control-bar, .ha-controls-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+    .ha-control-bar { justify-content: space-between; }
+    .ha-controls > .widget-content { container-type: inline-size; }
+    .ha-controls [hidden] { display: none; }
+    .ha-controls-status { color: var(--color-text-base); font-size: 13px; }
+    .ha-controls-status[data-compact] { flex: none; white-space: nowrap; }
+    .ha-controls-status[data-online]::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-inline-end: 7px; border-radius: 50%; background: var(--color-positive); vertical-align: middle; }
+    .ha-control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+    @container (max-width: 440px) { .ha-control-grid { grid-template-columns: minmax(0,1fr); } }
+    .ha-control-card { min-width: 0; padding: 14px; border: 1px solid var(--color-widget-content-border); border-radius: 12px; }
+    .ha-control-card-header { display: flex; align-items: start; justify-content: space-between; gap: 8px; }
+    .ha-control-card h3 { color: var(--color-text-highlight); font-size: 15px; font-weight: 650; }
+    .ha-control-state, .ha-climate-temperature span { color: var(--color-text-base); font-size: 12px; }
+    .ha-control-card-header .ha-control-state { display: inline-block; margin-top: 3px; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb,var(--color-text-base) 9%,transparent); }
+    .ha-climate-temperature { display: grid; grid-template-columns: 36px 1fr 36px; align-items: center; gap: 6px; margin-block: 14px; text-align: center; }
+    .ha-control-target { display: block; color: var(--color-text-highlight); font-size: 26px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+    .ha-climate-modes { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 6px; }
+    .ha-lighting { grid-column: 1 / -1; }
+    .ha-lighting > h3 { margin-bottom: 3px; }
+    .ha-control-light { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 5px 10px; padding-block: 9px; }
+    .ha-control-light + .ha-control-light { border-top: 1px solid var(--color-widget-content-border); }
+    .ha-control-light:last-child { padding-bottom: 0; }
+    .ha-control-light strong, .ha-control-light .ha-control-state { display: block; }
+    .ha-control-light strong { color: var(--color-text-highlight); font-weight: 550; }
+    .ha-controls button { cursor: pointer; min-height: 34px; padding: 5px 8px; border: 1px solid var(--color-widget-content-border); border-radius: 8px; background: var(--color-widget-background); color: var(--color-text-highlight); font: inherit; font-size: 13px; }
+    .ha-climate-temperature button, .ha-climate-modes button { padding-inline: 3px; }
+    .ha-climate-modes button[aria-pressed="true"] { border-color: var(--color-primary); background: color-mix(in srgb,var(--color-primary) 12%,var(--color-widget-background)); color: var(--color-primary); font-weight: 650; }
+    .ha-controls button:disabled { opacity: .55; cursor: default; }
+    .ha-controls button:not(:disabled):hover { border-color: var(--color-primary); }
+    .ha-controls button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .ha-control-light[data-unavailable] strong { color: var(--color-text-base); }
+    .ha-controls .ha-power-switch { position: relative; flex: 0 0 46px; padding: 0; border: 0; border-radius: 999px; background: transparent; }
+    .ha-power-switch::before { content: ""; position: absolute; inset: 5px 0; border-radius: 999px; border: 1px solid var(--color-widget-content-border); background: color-mix(in srgb,var(--color-text-base) 27%,var(--color-widget-background)); }
+    .ha-power-switch::after { content: ""; position: absolute; top: 9px; left: 4px; width: 16px; height: 16px; border-radius: 50%; background: #f7f9f8; box-shadow: 0 1px 3px #0003; transition: transform .16s ease; }
+    .ha-power-switch[aria-checked="true"]::before { background: var(--color-primary); border-color: var(--color-primary); }
+    .ha-power-switch[aria-checked="true"]::after { transform: translateX(22px); background: var(--color-widget-background); }
+    .ha-power-switch:not(:disabled):hover::before { border-color: var(--color-primary); }
+    @media(prefers-reduced-motion:reduce) { .ha-power-switch::after { transition: none; } }
+    .ha-controls [data-connect] { color: var(--color-primary); }
     .homelab-clock [data-local-time] { flex-direction: column; align-items: start; gap: 12px; }
     .homelab-clock [data-local-time] > div:first-child { order: 2; }
     .homelab-clock [data-time] { font-size: 44px; font-weight: 550; letter-spacing: -.04em; color: var(--color-text-highlight); }
@@ -116,6 +179,9 @@ document:
     @media(min-width:1000px) and (max-width:1190px) { body .page:has(.photo-hero) .page-column-small { width: 290px; } }
     @media(max-width:999px) { .photo-hero { padding: 26px; } .photo-hero h1 { font-size: 29px; } .photo-hero-art { display: none; } body .page:has(.photo-hero) .page-column-small { width: 100%; } }
     </style>
+    <script type="module">
+      if (location.pathname === '/smart-home') import('/assets/home-assistant/controls.js?v=6');
+    </script>
     <script>
     (() => {
       const preference = window.matchMedia('(prefers-color-scheme: dark)');

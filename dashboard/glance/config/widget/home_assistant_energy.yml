@@ -1,0 +1,67 @@
+- type: custom-api
+  title: 用电与供电
+  cache: 1m
+  options:
+    token: "${HOME_ASSISTANT_TOKEN}"
+  template: |-
+    {{ $dashboard := "https://ha.guangluo.top/family-home/" }}
+    {{ $number := `^-?[0-9]+(\.[0-9]+)?$` }}
+    <div class="home-assistant-panel home-assistant-energy">
+      {{ with .Options.StringOr "token" "" }}
+        {{ $response := newRequest "https://ha.guangluo.top/api/states" | withHeader "Authorization" (concat "Bearer " .) | getResponse }}
+        {{ if eq $response.Response.StatusCode 200 }}
+          {{ $syncedAt := now }}
+          <p class="home-assistant-sync" data-online><time datetime="{{ $syncedAt | formatTime "rfc3339" }}">{{ $syncedAt | formatTime "15:04" }}</time> 已同步</p>
+          {{ $states := $response.JSON }}
+          {{ $gridSensor := $states.String `#(entity_id%"sensor.state_grid_*_daily_ele_num").entity_id` }}
+          {{ $energy := $states.String (printf "#(entity_id==%q).state" $gridSensor) | findMatch $number }}
+          {{ $energyDate := $states.String (printf "#(entity_id==%q).state" (concat (trimSuffix "_daily_ele_num" $gridSensor) "_daily_lasted_date")) | findMatch `^[0-9]{4}-[0-9]{2}-[0-9]{2}$` }}
+          {{ $monthEnergy := $states.String (printf "#(entity_id==%q).state" (concat (trimSuffix "_daily_ele_num" $gridSensor) "_month_ele_num")) | findMatch $number }}
+          {{ $plugDaily := $states.String `#(entity_id=="sensor.home_plug_energy_daily").state` | findMatch $number }}
+          {{ $plugMonthly := $states.String `#(entity_id=="sensor.home_plug_energy_monthly").state` | findMatch $number }}
+          {{ $power := $states.String `#(entity_id=="sensor.home_monitored_power").state` | findMatch $number }}
+          {{ $charge := $states.String `#(entity_id=="sensor.apc_ups_battery_charge").state` | findMatch $number }}
+          {{ $load := $states.String `#(entity_id=="sensor.apc_ups_load").state` | findMatch $number }}
+          {{ $runtime := $states.String `#(entity_id=="sensor.ups_battery_runtime").state` | findMatch $number }}
+          <div class="home-assistant-grid">
+            <a class="home-assistant-tile" href="{{ $dashboard }}energy-monitor">
+              <span class="home-assistant-label">电网日用电</span>
+              <strong class="home-assistant-reading">{{ if $energy }}{{ $energy }} <small>kWh</small>{{ else }}—{{ end }}</strong>
+              <span class="home-assistant-detail">{{ if $energyDate }}<time datetime="{{ $energyDate }}">{{ $energyDate }}</time>{{ else }}等待电网数据{{ end }}</span>
+            </a>
+            <a class="home-assistant-tile" href="{{ $dashboard }}energy-monitor">
+              <span class="home-assistant-label">电网月用电</span>
+              <strong class="home-assistant-reading">{{ if $monthEnergy }}{{ $monthEnergy }} <small>kWh</small>{{ else }}—{{ end }}</strong>
+            </a>
+            <a class="home-assistant-tile" href="{{ $dashboard }}energy-monitor">
+              <span class="home-assistant-label">设备实时功率</span>
+              <strong class="home-assistant-reading">{{ if $power }}{{ $power }} <small>W</small>{{ else }}—{{ end }}</strong>
+              <span class="home-assistant-detail">已接入设备</span>
+            </a>
+            <a class="home-assistant-tile" href="{{ $dashboard }}energy-monitor">
+              <span class="home-assistant-label">插排今日用电</span>
+              <strong class="home-assistant-reading">{{ if $plugDaily }}{{ $plugDaily }} <small>kWh</small>{{ else }}—{{ end }}</strong>
+              <span class="home-assistant-detail">本月 {{ if $plugMonthly }}{{ $plugMonthly }} kWh{{ else }}—{{ end }}</span>
+            </a>
+            <a class="home-assistant-tile" href="{{ $dashboard }}infrastructure">
+              <span class="home-assistant-label">NAS UPS 电量</span>
+              <strong class="home-assistant-reading">{{ if $charge }}{{ $charge }} <small>%</small>{{ else }}—{{ end }}</strong>
+              <span class="home-assistant-detail">负载 {{ if $load }}{{ $load }}%{{ else }}—{{ end }}</span>
+            </a>
+            <a class="home-assistant-tile" href="{{ $dashboard }}infrastructure">
+              <span class="home-assistant-label">UPS 预计续航</span>
+              <strong class="home-assistant-reading">{{ if $runtime }}{{ div ($states.Float `#(entity_id=="sensor.ups_battery_runtime").state`) 60.0 | printf "%.0f" }} <small>分钟</small>{{ else }}—{{ end }}</strong>
+              <span class="home-assistant-detail">按当前负载估算</span>
+            </a>
+          </div>
+        {{ else }}
+          <p class="home-assistant-sync">暂时无法读取用电数据</p>
+        {{ end }}
+      {{ else }}
+        <p class="home-assistant-sync">尚未配置数据连接</p>
+      {{ end }}
+      <nav class="home-assistant-links" aria-label="用电与服务快捷入口">
+        <a href="{{ $dashboard }}energy-monitor">用电详情</a>
+        <a href="{{ $dashboard }}services">服务状态</a>
+      </nav>
+    </div>

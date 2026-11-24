@@ -13,6 +13,7 @@ services:
       IMMICH_API_KEY: ${IMMICH_API_KEY:?请在根 .env 中设置 IMMICH_API_KEY}
       IMMICH_URL: http://192.168.10.5:6104
       EMBY_API_KEY: ${EMBY_API_KEY:?请在根 .env 中设置 EMBY_API_KEY}
+      HOME_ASSISTANT_TOKEN: ${HOME_ASSISTANT_TOKEN:-}
       LANGUAGE: All
       PERIOD: past_24_hours
       PGID: '100'
